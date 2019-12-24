@@ -18,7 +18,9 @@ from utils.trainer import Trainer
 from utils.losses import lovasz_softmax, DiceLoss
 
 from models.low_res_seg.keep_dimension import input_keep_res_net_34_s1_all
-from models.low_res_seg.keep_dimension import input_keep_res_net_34_s2_all
+from models.low_res_seg.keep_dimension import input_keep_res_net_34_s2_all 
+from models.low_res_seg.keep_dimension import input_keep_res_net_34_vhr_all
+
 from models.pspnet.pspnet_sentinel import psp34_sentinel1_and_sentinel2
 from models.pspnet.pspnet_fused import pspnet_fused_s2_10m
 from models.pspnet.pspnet_fused import pspnet_fused_s1_10m
@@ -60,7 +62,9 @@ def main(
     val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers) 
 
 
-    if experiment == "vhr":
+    elif experiment == "vhr_post_pre":
+        networks = input_keep_res_net_34_vhr_all()
+    elif experiment == "vhr":
         network = pspnet_10m()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()

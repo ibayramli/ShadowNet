@@ -276,10 +276,10 @@ class PSPModule(nn.Module):
 
 
 class InputKeepResSentinelNet(nn.Module):
-    def __init__(self, model, keys, psp_size=512, sizes=(1, 2, 3, 6)):
+    def __init__(self, model, keys, psp_size=512, sizes=(1, 2, 3, 6), input_size=(96, 96)):
         super(InputKeepResSentinelNet, self).__init__()
         self.keys = keys
-        self.input_size = (96, 96)
+        self.input_size = input_size
 
         # First Encoder layers
         self.encoder = model
@@ -375,6 +375,13 @@ def input_keep_res_net_34_s1_all():
     keys = ["pre_sar", "post_sar", "multitemp_img",
             "pre_sar_intensity", "post_sar_intensity"]
     in_channels = 1 * 5
+    model = dilated_resnet34_keep_input(in_channels)
+
+    return InputKeepResSentinelNet(model, keys)
+
+def input_keep_res_net_34_vhr_all():
+    keys = ["pre_vhr", "post_vhr"]
+    in_channels = 3 + 3
     model = dilated_resnet34_keep_input(in_channels)
 
     return InputKeepResSentinelNet(model, keys)
