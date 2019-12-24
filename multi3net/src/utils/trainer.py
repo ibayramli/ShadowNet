@@ -14,6 +14,7 @@ from torch.optim import lr_scheduler
 import utils.classmetric as classmetric
 import torch
 from utils.logger import Logger, VisdomLogger
+from utils.losses import imbalance_coef
 
 #from .nvidia_tools import get_gpu_memory_map, log_gpu_statistics
 import utils.nvidia_tools as nvidia_tools
@@ -22,6 +23,7 @@ from utils.nvidia_tools import push_ngc_telemetry
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+import torch.nn as nn
 
 USE_MULTI_LOSS = False
 LOG_NGC_DICT = False
@@ -284,14 +286,12 @@ class Trainer(object):
         for iteration, data in enumerate(dataloader):
             optimizer.zero_grad()
 
-            tile, input, target_tensor = data	
-
-            target = tensor_to_variable(target_tensor[0])
-
-
+            tile, input, target_tensor = data          
 
             for key in input.keys():
                 input[key] = tensor_to_variable(input[key])
+	    target = tensor_to_variable(target_tensor[0]) 
+            w1 = imbalance_coef(target_tensor[0], max_val=3.)  
 
             output = network.forward(input)
 
@@ -301,14 +301,16 @@ class Trainer(object):
 	    
             # force the output label map to match the target dimensions
             b, h, w = target.shape
-            output = torch.nn.functional.upsample(output, size=(h, w), mode='bilinear')
-          
-            l = loss(output, target.long())
-          
-
+            output = nn.functional.upsample(output, size=(h, w), mode='bilinear')	
+            
+#            loss = nn.NLLLoss2d(weight=w1) 
+#            if torch.cuda.is_available():
+#                loss = loss.cuda()
+ 
+            l = loss(output, target.long()) 
             l.backward()
             optimizer.step()
-
+            
             train_metric = metric(target, output)
             train_metric['loss'] = l.data.cpu().numpy()
 
@@ -369,8 +371,10 @@ class Trainer(object):
             # force the output label map to match the target dimensions
 	  
             b, h, w = target.shape
-            output = torch.nn.functional.upsample(output, size=(h, w), mode='bilinear')
+            output = nn.functional.upsample(output, size=(h, w), mode='bilinear')
             l = loss(output, target.long())
+            #if torch.cuda.is_available():
+            #   l = l.cuda()
 
             val_metric = metric(target, output)
             val_metric['loss'] = l.data.cpu().numpy()  # loss_metric(l.data[0]).cpu().numpy()

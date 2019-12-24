@@ -15,6 +15,8 @@ from utils.dataloader import val_xbd_data_loader
 
 from utils.trainer import Trainer
 
+from utils.losses import lovasz_softmax, DiceLoss
+
 from models.low_res_seg.keep_dimension import input_keep_res_net_34_s1_all
 from models.low_res_seg.keep_dimension import input_keep_res_net_34_s2_all
 from models.pspnet.pspnet_sentinel import psp34_sentinel1_and_sentinel2
@@ -91,17 +93,10 @@ def main(
         state = resume(snapshot, None, optimizer)
         train.iterations = state['iteration']
 
-    def dice_loss(input, target):
-        smooth = 1.
-
-        iflat = input.sum(dim=1).view(-1)
-        tflat = target.view(-1)
-        intersection = (iflat * tflat).sum() 
-    
-        return 1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth))
-
-    class_weights = torch.tensor([1., 3.])
-    loss = nn.NLLLoss2d(weight=class_weights)
+    #loss = DiceLoss(weight=torch.tensor([20]), sigmoid_normalization=False)
+    #class_weights = torch.tensor([1., 3.])
+    loss = nn.NLLLoss2d()
+    #loss = lovasz_softmax
     if torch.cuda.is_available():
         loss = loss.cuda()
 

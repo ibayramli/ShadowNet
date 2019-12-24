@@ -68,7 +68,8 @@ class PSPNet(nn.Module):
 
 
     def forward(self, x):
-        x = Variable(x['vhr'].float()).cuda()
+#        x = Variable(x['vhr'].float()).cuda()
+        x = Variable(x.float())
         f = self.backend.forward(x)
         p = self.psp(f)
         p = self.drop_1(p)
@@ -86,7 +87,7 @@ class PSPNet(nn.Module):
 
         self.p_combined = torch.cat([p1, p2], dim=1)
 
-        return F.log_softmax(p2, dim=1)
+        return F.log_softmax(p2)
 
 
     def load_state_dict(self, state_dict):

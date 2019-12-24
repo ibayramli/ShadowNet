@@ -5,10 +5,14 @@ test/
 results/
 errors/
 outputs/
+xview_test/
 
 # Ignore swap files
 *.swo
 *.swp
+*.err
+*.out
+*.npy
 
 __pycache__/
 *.py[cod]

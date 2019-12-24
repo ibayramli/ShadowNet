@@ -54,6 +54,8 @@ def main(
         network_type,
         fusion,
         data,
+        write,
+        num_test
 ):
 
     n_classes = 2
@@ -85,7 +87,7 @@ def main(
         network.load_state_dict(model_zoo.load_url(
             'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
 
-    else:
+    elif not finetune:
         finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(
             num_epochs, n_classes)
 	
@@ -114,7 +116,8 @@ def main(
     if finetune or snapshot:
         state = resume(finetune or snapshot, network, None)
     loss_str_list = []
-
+    
+    metric_dicts = []
     network.eval()
     for iteration, data in enumerate(val):	
         tile, input, target_tensor = data
@@ -123,7 +126,7 @@ def main(
         for key in input.keys():
             input[key] = tensor_to_variable(input[key])
         
-        output_raw = network.forward(input) 
+        output_raw = network.forward(input['vhr']) 
         
         if type(output_raw) == tuple:
             output_raw = output_raw[-1] 
@@ -138,8 +141,15 @@ def main(
         else:
             soft = nn.Softmax2d()
             output = soft(output_raw)
-
+            
         train_metric = metric(target, output)
+        
+        if not write:
+            metric_dicts.append(train_metric)
+            if iteration > num_test - 1:
+                break        
+            continue
+
         loss_str_list.append("Input ID: {}; Metric: {} ".format(tile, str(train_metric)))
 
         # convert zo W x H x C
@@ -160,27 +170,38 @@ def main(
             prediction_img = np.argmax(prediction, prediction.shape.index(n_classes)).numpy()
 
         target_img = target.numpy()
-
+        target_img[target_img == 1] = 2
+        target_img[target_img == 0] = 1
         # Write input image (only first 3 bands)
-#        input_img = input['vhr'].squeeze(0).cpu().numpy()
-#        
-#        if input_img[:, 0, 0].size >= 3:
-#            input_img = cv2.merge((input_img[0], input_img[1], input_img[2]))
-#        else:
-#            input_img = input_img[0]
+        #input_img = input['vhr'].squeeze(0).cpu().numpy()
+        
+        #if input_img[:, 0, 0].size >= 3:
+        #    input_img = cv2.merge((input_img[0], input_img[1], input_img[2]))
+        #else:
+        #   input_img = input_img[0]
 
         upsample = nn.Upsample(size=(int(tile_size/1.25), int(tile_size/1.25)), mode='bilinear', align_corners=True)  # Harvey
-
-#        cv2.imwrite(RESULTS_PATH+"/img/{}_input_class_{:02}.png".format(iteration, n_classes), input['vhr'].cpu().data[0].numpy())
-        cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}.png".format(iteration, n_classes), prediction_img*255)
-        cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}.png".format(iteration, n_classes), target_img*255)
+        
+        #cv2.imwrite(RESULTS_PATH+"/img/{}_input_class_{:02}.png".format(iteration, n_classes), input['vhr'].cpu().data[0].numpy())
+        cv2.imwrite(RESULTS_PATH+"/results_damage/test_damage_{}_prediction.png".format(tile[0].split('/')[-1].split('post_')[-1].split('.png')[0]), prediction_img)
+    #    cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), prediction_img*255)
+    #    cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), target_img*255)
         #exit(0)
+
+        if not write:
+            metrics_df = pd.DataFrame(metric_dicts)
+            mean_metrics = df.mean()
+            return dict(mean_metrics)
 
         with open(RESULTS_PATH + "/MSEloss.csv", "w") as output:
             writer = csv.writer(output, delimiter=';', lineterminator='\n')
             for val in loss_str_list:
                 writer.writerow([val])
-
+    if not write:
+        metrics_df = pd.DataFrame(metric_dicts)
+        mean_metrics = metrics_df.mean()
+        return dict(mean_metrics)
+ 
 
 def tensor_to_variable(tensor):
     if torch.cuda.is_available():
@@ -286,6 +307,18 @@ if __name__ == '__main__':
         nargs='+',
         help='datasets used',
     )
+    parser.add_argument(
+	'-wr', '--write',
+        default=True,
+        type=bool,
+        help='must be set to False except when used in best_epochs.py' 
+    )
+    parser.add_argument(
+	'-nt', '--num_test',
+	default=30,
+	type=int,
+	help='number of test examples to consider'
+    )
 
     args, unknown = parser.parse_known_args()
     try:
@@ -304,6 +337,8 @@ if __name__ == '__main__':
             args.network_type,
             args.fusion,
             args.data,
+            args.write,
+	    args.num_test
         )
     except KeyboardInterrupt:
         pass

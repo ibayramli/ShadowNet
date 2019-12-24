@@ -326,7 +326,6 @@ class XBDImageDataset(torch.utils.data.Dataset):
         vhr_img_path = os.path.join(self.root_dir, self.mode, cur)
         img_vhr = tiff_to_nd_array(vhr_img_path).astype(float)
         img_vhr = resize(img_vhr, shape=(int(h_vhr / 2), int(w_vhr / 2)))
-
         img_vhr = augmentation(img_vhr)
         img_vhr = normalize_channels(img_vhr, 255, 0)
         img_vhr = torch.from_numpy(img_vhr)
@@ -338,8 +337,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
         else: # if label is missing, the label has no polygons (is all 0s)
             label = self.read_target_file(augmentation, os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
-
-        tile = os.path.dirname(os.path.join(self.root_dir, 'masks', cur))
+        tile = os.path.join(self.root_dir, 'masks', cur)
 
         return tile, inputs, (label, )
 
@@ -353,7 +351,6 @@ def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_m
                                              batch_size=batch_size,
                                              shuffle=shuffle,
                                              num_workers=num_workers)
-
 
     return dataloader
 
