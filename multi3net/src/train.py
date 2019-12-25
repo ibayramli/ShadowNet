@@ -8,8 +8,7 @@ import os
 import argparse
 
 from utils import resume
-from utils.dataloader import train_houston_data_loader
-from utils.dataloader import val_houston_data_loader
+
 from utils.dataloader import train_xbd_data_loader
 from utils.dataloader import val_xbd_data_loader
 
@@ -62,8 +61,8 @@ def main(
     val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers) 
 
 
-    elif experiment == "vhr_post_pre":
-        networks = input_keep_res_net_34_vhr_all()
+    if experiment == "vhr_post_pre":
+        network = input_keep_res_net_34_vhr_all()
     elif experiment == "vhr":
         network = pspnet_10m()
     elif experiment == "s1":
