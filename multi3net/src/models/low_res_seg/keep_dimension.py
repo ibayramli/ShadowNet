@@ -384,7 +384,7 @@ def input_keep_res_net_34_vhr_all():
     in_channels = 3 + 3
     model = dilated_resnet34_keep_input(in_channels)
 
-    return InputKeepResSentinelNet(model, keys)
+    return InputKeepResSentinelNet(model, keys, input_size=(1024, 1024))
 
 
 def input_keep_res_net_34_s1s2():
