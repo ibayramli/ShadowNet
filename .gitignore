@@ -13,6 +13,7 @@ xview_test/
 *.err
 *.out
 *.npy
+*.sh
 
 __pycache__/
 *.py[cod]
