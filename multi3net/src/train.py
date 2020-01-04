@@ -62,7 +62,7 @@ def main(
 
 
     if experiment == "vhr_post_pre":
-        network = input_keep_res_net_34_vhr_all()
+        network = input_keep_res_net_34_vhr_all(input_size=(512, 512))
     elif experiment == "vhr":
         network = pspnet_10m()
     elif experiment == "s1":
