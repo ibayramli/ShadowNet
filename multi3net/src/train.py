@@ -25,6 +25,7 @@ from models.pspnet.pspnet_fused import pspnet_fused_s2_10m
 from models.pspnet.pspnet_fused import pspnet_fused_s1_10m
 from models.pspnet.pspnet_fused_all import pspnet_fused_s1s2_10m
 from models.pspnet.psp_net import pspnet_10m
+from models.pspnet.psp_net import pspnet_10m_pre_post
 
 TRAINDATA_ENVIRONMENT_VARIABLE="TRAINDATA_PATH"
 VALIDATA_ENVIRONMENT_VARIABLE="VALIDATA_PATH"
@@ -62,7 +63,8 @@ def main(
 
 
     if experiment == "vhr_post_pre":
-        network = input_keep_res_net_34_vhr_all(input_size=(512, 512))
+        # network = input_keep_res_net_34_vhr_all(input_size=(512, 512))
+        network = pspnet_10m_pre_post()
     elif experiment == "vhr":
         network = pspnet_10m()
     elif experiment == "s1":
@@ -79,8 +81,6 @@ def main(
         network = pspnet_fused_s1s2_10m()
     else:
         raise ValueError("Please insert a valid experiment id. Valid experiments are 'vhr', 's1', 's2', 'vhrs1, 'vhrs2', 'vhrs1s2'")
-	
-  
 	
     network = nn.DataParallel(network)
     if torch.cuda.is_available():
