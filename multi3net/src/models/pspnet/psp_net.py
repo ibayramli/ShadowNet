@@ -67,8 +67,15 @@ class PSPNet(nn.Module):
                 yield p
 
 
-    def forward(self, x):
-        x = Variable(x['vhr'].float()).cuda()
+    def forward(self, input):
+        images = []
+        for item in input:
+            if torch.cuda.is_available():
+                images.append(Variable(input[item].float()).cuda())
+            else:
+                images.append(Variable(input[item].float())
+            
+        x = torch.cat(images, dim=1)
         f = self.backend.forward(x)
         p = self.psp(f)
         p = self.drop_1(p)
@@ -106,6 +113,9 @@ def pspnet_10m():
     model = PSPNet(resnet34(pretrained=True), psp_size=512)
     return model
 
+def pspnet_10m_pre_post():
+    model = PSPNet(resnet34(input_channels=6, pretrained=True), psp_size=512)
+    return model
 
 def pspnet_2m():
     model = PSPNet(resnet34(pretrained=True), psp_size=512,
