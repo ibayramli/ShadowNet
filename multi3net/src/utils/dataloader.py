@@ -35,12 +35,12 @@ class XBDImageDataset(torch.utils.data.Dataset):
         return len(self.posts)
 
     def reduce_channels(self, arr):
-    '''
+        '''
 
 	Turns a NxMxK tensor into MxK one
 
 	'''
-        reduced = torch.max(arr, dim=0)[0]
+	reduced = torch.max(arr, dim=0)[0]
         reduced[reduced > 0] = 1
         
         return reduced 
@@ -65,7 +65,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
             return np.moveaxis(array, 2, 0)
 	
-	    tile_size = self.tile_size
+	tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
 
         img_vhr = tiff_to_nd_array(vhr_img_path).astype(float)
