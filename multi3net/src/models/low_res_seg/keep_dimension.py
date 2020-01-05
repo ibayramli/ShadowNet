@@ -243,7 +243,7 @@ def dilated_resnet34_keep_input(input_channels, pretrained=True):
     model = KeepDilatedResNet(input_channels, BasicBlock, [3, 4, 6, 3])
     if pretrained:
         model.load_imagenet_pretrained(model_urls["resnet34"])
-        #model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
+
     return model
 
 
@@ -321,12 +321,6 @@ class InputKeepResSentinelNet(nn.Module):
                 input['{}'.format(item)] = Variable(input[item].float()).cuda()
             else:
                 input['{}'.format(item)] = Variable(input[item].float())
-
-        # x1 = input[self.keys[0]]
-        # if "sar" in self.keys[0]:
-        #    h, w = 1 * x1.size(2), 4 * x1.size(3)
-        # else:
-        #    h, w = 8 * x1.size(2), 8 * x1.size(3)
 
         images = []
         for i in range(len(self.keys)):
