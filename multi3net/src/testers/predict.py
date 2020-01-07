@@ -170,23 +170,11 @@ def main(
             prediction_img = np.argmax(prediction, prediction.shape.index(n_classes)).numpy()
 
         target_img = target.numpy()
-        target_img[target_img == 1] = 2
-        target_img[target_img == 0] = 1
-        # Write input image (only first 3 bands)
-        #input_img = input['vhr'].squeeze(0).cpu().numpy()
-        
-        #if input_img[:, 0, 0].size >= 3:
-        #    input_img = cv2.merge((input_img[0], input_img[1], input_img[2]))
-        #else:
-        #   input_img = input_img[0]
 
         upsample = nn.Upsample(size=(int(tile_size/1.25), int(tile_size/1.25)), mode='bilinear', align_corners=True)  # Harvey
-        
-        #cv2.imwrite(RESULTS_PATH+"/img/{}_input_class_{:02}.png".format(iteration, n_classes), input['vhr'].cpu().data[0].numpy())
-        cv2.imwrite(RESULTS_PATH+"/results_damage/test_damage_{}_prediction.png".format(tile[0].split('/')[-1].split('post_')[-1].split('.png')[0]), prediction_img)
-    #    cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), prediction_img*255)
-    #    cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), target_img*255)
-        #exit(0)
+ 
+        cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), prediction_img*255)
+        cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), target_img*255)
 
         if not write:
             metrics_df = pd.DataFrame(metric_dicts)

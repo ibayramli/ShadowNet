@@ -23,7 +23,10 @@ def get_best_weights(results_path='', weights=[2, 3, 4, 5, 6, 8, 9, 10, 'theoret
     print(weight_dict) 
     return weight_dict	
 
-def get_best_epoch_metrics(predictions_path):
+def get_best_epoch_metrics(predictions_path=""):
+    if predictions_path:
+ 	predictions_path = os.environ["RESULTS_PATH"]
+    
     path = os.path.join(predictions_path, 'vhr_buildings10m')
     subdirs = [os.path.join(path, name) for name in os.listdir(path) if name.endswith('.pth')]
     subdirs.sort()
@@ -49,11 +52,14 @@ def get_best_epoch_metrics(predictions_path):
 			        write=False,
 			        num_test=20  
 			)
-	
-	score = epoch_metrics['f1_building'] + epoch_metrics['iou_building'] + epoch_metrics['Kappa']
+
+	score = epoch_metrics['f1_building'] + epoch_metrics['iou_building']
 	epoch_scores[i] = score
+   	print(epoch_metrics)
+	print('The f_1 + iou_building score is: {}'.format(score))
 
     max_epoch = max(epoch_scores.iterkeys(), key=(lambda key: epoch_scores[key]))
+    print('The best epoch is: {} with a epoch score of {}'.format(max_epoch, epoch_scores[max_epoch]))
     return (max_epoch, epoch_scores[max_epoch])
     
 if __name__ == '__main__':
@@ -64,12 +70,12 @@ if __name__ == '__main__':
     parser.add_argument(
         '-p', '--path',
         type=str,
-        help='path to the results folder',
+        help='path to the results folder, if not given defaults to the environmental variable RESULTS_PATH',
     )
     args = parser.parse_args()
 
     try:
-	get_best_weights(args.path)
+	get_best_epoch_metrics(args.path)
     except KeyboardInterrupt:
 	pass
     finally:
