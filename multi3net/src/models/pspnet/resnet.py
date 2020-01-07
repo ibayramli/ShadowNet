@@ -53,6 +53,7 @@ model_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
     'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
     'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+    'spacenet_resnet34': 'https://s3.amazonaws.com/spacenet-dataset/spacenet-model-weights/spacenet-4/selimsef_spacenet4_resnet34unet_solaris_weights.pth',
 }
 
 
@@ -210,7 +211,7 @@ def resnet18(input_channels, pretrained=True):
 def resnet34(input_channels, pretrained=True):
     model = ResNet(BasicBlock, [3, 4, 6, 3], input_channels)
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
+        model.load_state_dict(model_zoo.load_url(model_urls['spacenet_resnet34']))
     return model
 
 def resnet50(input_channels, pretrained=True):

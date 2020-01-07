@@ -73,7 +73,7 @@ class PSPNet(nn.Module):
             if torch.cuda.is_available():
                 images.append(Variable(input[item].float()).cuda())
             else:
-                images.append(Variable(input[item].float())
+                images.append(Variable(input[item].float()))
             
         x = torch.cat(images, dim=1)
         f = self.backend.forward(x)
@@ -114,7 +114,7 @@ def pspnet_10m():
     return model
 
 def pspnet_10m_pre_post():
-    model = PSPNet(resnet34(input_channels=6, pretrained=True), psp_size=512)
+    model = PSPNet(resnet34(input_channels=3, pretrained=True), psp_size=512)
     return model
 
 def pspnet_2m():
