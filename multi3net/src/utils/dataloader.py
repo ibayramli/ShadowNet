@@ -87,8 +87,8 @@ class XBDImageDataset(torch.utils.data.Dataset):
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
         vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
         post = self.path_to_tensor(vhr_post_path)
-        #pre = self.path_to_tensor(vhr_pre_path)
-        #inputs['pre_vhr'] = pre	
+        pre = self.path_to_tensor(vhr_pre_path)
+        inputs['pre_vhr'] = pre	
         inputs['post_vhr'] = post
 
         if post_cur in self.labels:

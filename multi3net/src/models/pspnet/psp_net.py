@@ -114,7 +114,7 @@ def pspnet_10m():
     return model
 
 def pspnet_10m_pre_post():
-    model = PSPNet(resnet34(input_channels=3, pretrained=True), psp_size=512)
+    model = PSPNet(resnet34(input_channels=6, pretrained=False), psp_size=512)
     return model
 
 def pspnet_2m():
