@@ -27,13 +27,13 @@ def get_best_epoch_metrics(predictions_path=""):
     if not predictions_path:
      	predictions_path = os.environ["RESULTS_PATH"]
 
-    num_epochs = len([name for name in os.listdir(path) if name.endswith('.pth')])
-    
+    num_epochs = len([name for name in os.listdir(os.path.join(predictions_path, 'vhr_buildings10m')) if name.endswith('.pth')])
+ 
     epoch_scores = {}   
     for i in range(num_epochs):
         print('Computing test output of epoch {}'.format(str(i+1)))
 	epoch_metrics = get_epoch_metrics(
-				batch_size=8,
+		        	batch_size=8,
 			    nworkers=1,
 			    datadir=None,
 			    outdir='.',
@@ -44,7 +44,7 @@ def get_best_epoch_metrics(predictions_path=""):
 			    loadvgg=False,
 			    network_type='vhr_pre_post',
 			    write=False,
-			    num_test=20  
+			    num_test=10  
 			)
 
 	score = epoch_metrics['f1_building'] + epoch_metrics['iou_building']

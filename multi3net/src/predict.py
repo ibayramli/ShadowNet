@@ -38,14 +38,12 @@ from torch.autograd import Variable
 import cv2
 
 
-def init_network(network_type, n_classes, finetune, snapshot, loadvgg):
+def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvgg):
     if network_type == 'vhr_pre_post':
-	    network = pspnet_10m_pre_post()
-    if network_type == 'vhr':
-	    network = pspnet_10m()
-    if network_type == 'vhr':
-	    network = pspnet_10m()
-    if network_type == 'baseline_vhr':
+        network = pspnet_10m_pre_post()
+    elif network_type == 'vhr':
+        network = pspnet_10m()
+    elif network_type == 'baseline_vhr':
         network = damage_net_vhr(n_classes=n_classes)
         network.load_state_dict(model_zoo.load_url(
             'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
@@ -61,17 +59,16 @@ def init_network(network_type, n_classes, finetune, snapshot, loadvgg):
         network = damage_net_vhr_fusion_simple(n_classes=n_classes)
         network.load_state_dict(model_zoo.load_url(
             'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
-    elif not finetune:
-        finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
 
     if torch.cuda.is_available():
         network = network.cuda()
-        network = nn.DataParallel(network).cuda()
+       # network = nn.DataParallel(network).cuda()
 
-    if loadvgg == True:
+    if loadvgg:
         network.load_vgg16_weights()
 
-    if finetune or snapshot:
+    if finetune or snapshot or num_epochs:
+	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
 
     return network
@@ -95,9 +92,9 @@ def main(
 ):
     np.random.seed(0)
 
-    network = init_network(network_type, n_classes, finetune, snapshot, loadvgg)
+    network = init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvgg)
 	
-    if datadir is None:
+    if not datadir:
         datadir = TESTDATA_PATH
 
     val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test')
@@ -108,7 +105,7 @@ def main(
     network.eval()
 
     for iteration, data in enumerate(val):	
-        if iteration >= num_test: 
+        if num_test and iteration >= num_test: 
             break
 
         tile, input, target_tensor = data
@@ -119,16 +116,16 @@ def main(
             output_raw = output_raw[-1] 
             
         # force the output label map to match the target dimensions
-        h, w = target.shape
+        _, h, w = target.shape
         output_raw = torch.nn.functional.upsample(output_raw, size=(h, w), mode='bilinear')
-
+         
         # Normalize
         if n_classes == 1:
             output = output_raw
         else:
             soft = nn.Softmax2d()
             output = soft(output_raw)
-            
+  
         train_metric = metric(target, output)
         
         if not write:
@@ -158,8 +155,8 @@ def main(
 
         target_img = target.numpy()
  
-        cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), prediction_img*255)
-        cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1]), target_img*255)
+        cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), prediction_img*255)
+        cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), target_img*255)
 
         with open(RESULTS_PATH + "/MSEloss.csv", "w") as output:
             writer = csv.writer(output, delimiter=';', lineterminator='\n')
@@ -219,7 +216,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-p', '--datadir',
-        default='.',
+        default='',
         type=text_type,
         help='ILSVRC12 dir',
     )
@@ -235,7 +232,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-c', '--n_classes',
-        default = 1,
+        default = 2,
         type = int,
         help = 'prediction type: =1: regression />1: classification',
     )
@@ -247,7 +244,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-v', '--loadvgg',
-        default=0,
+        default=False,
         type=int,
         help='load vgg16',
     )
@@ -265,7 +262,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
 	'-nt', '--num_test',
-	default=30,
+	default=0,
 	type=int,
 	help='number of test examples to consider'
     )
