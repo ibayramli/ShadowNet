@@ -17,7 +17,8 @@ class XBDImageDataset(torch.utils.data.Dataset):
                  pre_post=False):
 	if mode not in ['test', 'train', 'val']: 
             raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
-
+	
+	self.pre_post = pre_post
 	self.mode = mode
         self.root_dir = root_dir
         self.n_classes = 2
@@ -25,14 +26,14 @@ class XBDImageDataset(torch.utils.data.Dataset):
         self.validation = mode == 'val' 
         self.transform = transform
         self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
-        if pre_post:
+        if self.pre_post:
             self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
         else:
             self.pres = [] 
         self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks')) if '_post' in pn]
         self.augmentation = random_augment() if self.validation == False else random_augment(0)
 
-        if len(self.posts) != len(self.pres):
+        if len(self.posts) != len(self.pres) and self.pre_post:
             raise ValueError('Number of post-disaster and pre-disaster images don\'t match')
 
     def __len__(self):
@@ -89,9 +90,12 @@ class XBDImageDataset(torch.utils.data.Dataset):
         post_cur = self.posts[idx]
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
         post = self.path_to_tensor(vhr_post_path)
-        inputs['post_vhr'] = post
+        if self.pre_post:
+	    inputs['post_vhr'] = post
+	else:
+	    inputs['vhr'] = post
 
-        if pre_post:
+        if self.pre_post:
             pre_cur = post_cur.replace('post', 'pre')
             vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
             pre = self.path_to_tensor(vhr_pre_path)

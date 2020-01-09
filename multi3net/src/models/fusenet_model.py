@@ -13,6 +13,8 @@ from six import binary_type
 from collections import OrderedDict
 from models.damage.psp_net_fusion import AttentionNetSimple
 
+import math
+
 class FuseNet(nn.Module):
     def __init__(self, n_classes, channel_dict, fusion, tile_size):
         super(FuseNet, self).__init__()
@@ -232,6 +234,7 @@ class UNet(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
+	x = x['']
         x1 = self.inc(x)
         x2 = self.down1(x1)
         x3 = self.down2(x2)

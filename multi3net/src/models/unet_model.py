@@ -11,6 +11,8 @@ from six import text_type
 from six import binary_type
 from collections import OrderedDict
 
+import math
+
 class UNet(nn.Module):
     def __init__(self, n_classes, channel_dict, fusion):
         super(UNet, self).__init__()
