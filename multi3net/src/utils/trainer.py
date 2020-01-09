@@ -167,9 +167,9 @@ class PolyPolicy(lr_scheduler.LambdaLR):
 """
 def tensor_to_variable(tensor):
     if torch.cuda.is_available():
-        return Variable(tensor).cuda()
+        return Variable(tensor.float()).cuda()
     else:
-        return Variable(tensor)
+        return Variable(tensor.float())
 
 class Trainer(object):
     def __init__(

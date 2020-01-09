@@ -107,7 +107,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
         else: # if label is missing, the label has no polygons (is all 0s)
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
-            
+
         tile = os.path.join(self.root_dir, 'masks', post_cur)
 
         return tile, inputs, (label, )

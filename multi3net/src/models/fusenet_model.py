@@ -13,11 +13,10 @@ from six import binary_type
 from collections import OrderedDict
 from models.damage.psp_net_fusion import AttentionNetSimple
 
-<<<<<<< HEAD
 from utils.trainer import tensor_to_variable
-=======
+
 import math
->>>>>>> 6eb9f679f86be61b2782e232bfa31b0a64d8f956
+
 
 class FuseNet(nn.Module):
     def __init__(self, n_classes, channel_dict, fusion, tile_size):
