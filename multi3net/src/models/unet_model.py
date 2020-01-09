@@ -13,7 +13,6 @@ from collections import OrderedDict
 
 class UNet(nn.Module):
     def __init__(self, n_classes, channel_dict, fusion):
-
         super(UNet, self).__init__()
 
         self.channel_dict = channel_dict
@@ -69,6 +68,14 @@ class UNet(nn.Module):
         self.outc = outconv(64, n_classes)
         self.n_classes = n_classes
         self.fusion = fusion
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
     def forward(self, x):
 

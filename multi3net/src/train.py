@@ -27,6 +27,9 @@ from models.pspnet.pspnet_fused_all import pspnet_fused_s1s2_10m
 from models.pspnet.psp_net import pspnet_10m
 from models.pspnet.psp_net import pspnet_10m_pre_post
 
+from models.model_fns import unet_basic_vhr
+from models.model_fns import unet_encoded_vhr
+
 TRAINDATA_ENVIRONMENT_VARIABLE="TRAINDATA_PATH"
 VALIDATA_ENVIRONMENT_VARIABLE="VALIDATA_PATH"
 
@@ -58,15 +61,14 @@ def main(
     if trainpath is None:
         trainpath = os.environ[TRAINDATA_ENVIRONMENT_VARIABLE]
 
-    train = train_xbd_data_loader(trainpath, batch_size=batch_size, shuffle=True, mode='train', num_workers=nworkers)
-    val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers) 
+    train = train_xbd_data_loader(trainpath, batch_size=batch_size, shuffle=True, mode='train', num_workers=nworkers, pre_post=experiment=="vhr_pre_post")
+    val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers, pre_post=experiment=="vhr_pre_post") 
 
 
-    if experiment == "vhr_post_pre":
-        # network = input_keep_res_net_34_vhr_all(input_size=(512, 512))
+    if experiment == "vhr_pre_post":
         network = pspnet_10m_pre_post()
     elif experiment == "vhr":
-        network = pspnet_10m()
+        network = unet_basic_vhr()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()
     elif experiment == "s2":

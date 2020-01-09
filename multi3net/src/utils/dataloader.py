@@ -13,7 +13,8 @@ transform = transforms.Compose([])
 class XBDImageDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir="/n/tambe_lab/disaster_relief/xBD_data/data",
                  transform=None,
-                 mode='train'):
+                 mode='train',
+                 pre_post=False):
 	if mode not in ['test', 'train', 'val']: 
             raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
 
@@ -24,7 +25,10 @@ class XBDImageDataset(torch.utils.data.Dataset):
         self.validation = mode == 'val' 
         self.transform = transform
         self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
-        self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
+        if pre_post:
+            self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
+        else:
+            self.pres = [] 
         self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks')) if '_post' in pn]
         self.augmentation = random_augment() if self.validation == False else random_augment(0)
 
@@ -83,13 +87,15 @@ class XBDImageDataset(torch.utils.data.Dataset):
         inputs = dict()	
         
         post_cur = self.posts[idx]
-        pre_cur = post_cur.replace('post', 'pre')
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
-        vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
         post = self.path_to_tensor(vhr_post_path)
-        pre = self.path_to_tensor(vhr_pre_path)
-        inputs['pre_vhr'] = pre	
         inputs['post_vhr'] = post
+
+        if pre_post:
+            pre_cur = post_cur.replace('post', 'pre')
+            vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
+            pre = self.path_to_tensor(vhr_pre_path)
+            inputs['pre_vhr'] = pre	
 
         if post_cur in self.labels:
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', post_cur))
@@ -97,15 +103,17 @@ class XBDImageDataset(torch.utils.data.Dataset):
         else: # if label is missing, the label has no polygons (is all 0s)
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
+            
         tile = os.path.join(self.root_dir, 'masks', post_cur)
 
         return tile, inputs, (label, )
 
 def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                             mode='train', labelimage="buildings10m.tif"):
+                             mode='train', labelimage="buildings10m.tif", pre_post=False):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
-                           mode=mode)
+                           mode=mode, 
+                           pre_post=pre_post)
 
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
@@ -115,12 +123,15 @@ def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_m
     return dataloader
 
 def val_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                              mode='train', labelimage="buildings10m.tif"):
+                              mode='train', labelimage="buildings10m.tif", pre_post=False):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
-                           mode=mode)
+                           mode=mode, 
+                           pre_post=pre_post)
+
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
                                              shuffle=shuffle,
                                              num_workers=num_workers)
     return dataloader
+

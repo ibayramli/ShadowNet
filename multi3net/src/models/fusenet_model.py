@@ -223,6 +223,14 @@ class UNet(nn.Module):
         self.up4 = up_skip(128, 64)
         self.outc = outconv(64, n_classes)
 
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1)
