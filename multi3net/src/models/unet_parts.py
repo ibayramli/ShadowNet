@@ -1,6 +1,8 @@
 
 # sub-parts of the U-Net model
 
+from __future__ import division
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -69,6 +71,7 @@ class up_skip(nn.Module):
         diffY = x1.size()[3] - x2.size()[3]
         x2 = F.pad(x2, (diffX // 2, int(diffX / 2),
                         diffY // 2, int(diffY / 2)))
+
         x = torch.cat([x2, x1], dim=1)
         x = self.conv(x)
         return x

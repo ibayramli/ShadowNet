@@ -221,8 +221,8 @@ class Trainer(object):
             scheduler = self.state['scheduler']
 
             # Print memory usage for GPU before training starts
-            #if torch.cuda.is_available():
-                #nvidia_tools.log_gpu_statistics()
+            if torch.cuda.is_available():
+                nvidia_tools.log_gpu_statistics()
 
             for epoch in range(start_epoch + 1, num_epochs + 1):
                 self.logger.update_epoch(epoch)
@@ -288,6 +288,8 @@ class Trainer(object):
 
             tile, input, target_tensor = data          
 
+            print(torch.cuda.memory_allocated(device=0))
+            print(torch.cuda.memory_allocated(device=1))
             for key in input.keys():
                 input[key] = tensor_to_variable(input[key])
 	    target = tensor_to_variable(target_tensor[0]) 

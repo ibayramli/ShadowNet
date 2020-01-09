@@ -84,7 +84,8 @@ def main(
     else:
         raise ValueError("Please insert a valid experiment id. Valid experiments are 'vhr', 's1', 's2', 'vhrs1, 'vhrs2', 'vhrs1s2'")
 	
-    network = nn.DataParallel(network)
+    if torch.cuda.device_count() > 1:
+	network = nn.DataParallel(network)
     if torch.cuda.is_available():
         network = network.cuda()
 

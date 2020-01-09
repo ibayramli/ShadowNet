@@ -1,4 +1,5 @@
 #an assembly of the sub-parts to form the complete net
+from __future__ import division
 
 from .unet_parts import *
 
