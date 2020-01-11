@@ -24,11 +24,9 @@ from models.pspnet.pspnet_sentinel import psp34_sentinel1_and_sentinel2
 from models.pspnet.pspnet_fused import pspnet_fused_s2_10m
 from models.pspnet.pspnet_fused import pspnet_fused_s1_10m
 from models.pspnet.pspnet_fused_all import pspnet_fused_s1s2_10m
-from models.pspnet.psp_net import pspnet_10m_pre_post
 
-from models.model_fns import unet_basic_vhr
-from models.model_fns import unet_encoded_vhr
-from models.model_fns import pspnet_10m
+
+from models.model_fns import *
 
 TRAINDATA_ENVIRONMENT_VARIABLE="TRAINDATA_PATH"
 VALIDATA_ENVIRONMENT_VARIABLE="VALIDATA_PATH"
@@ -68,7 +66,8 @@ def main(
     if experiment == "vhr_pre_post":
         network = pspnet_10m_pre_post()
     elif experiment == "vhr":
-        network = pspnet_10m()
+	print('Network is unet_basic_vhr()')
+        network = unet_basic_vhr()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()
     elif experiment == "s2":
@@ -100,9 +99,9 @@ def main(
         train.iterations = state['iteration']
 
     #loss = DiceLoss(weight=torch.tensor([20]), sigmoid_normalization=False)
-#    class_weights = torch.tensor([1., 2.])
-    loss = nn.NLLLoss2d()
-    #loss = lovasz_softmax
+    class_weights = torch.tensor([1., 3.])
+    loss = nn.NLLLoss2d(weight=class_weights)
+    #losis = lovasz_softmax
     if torch.cuda.is_available():
         loss = loss.cuda()
 
@@ -119,8 +118,8 @@ def parse_args():
     parser.add_argument('-w', '--workers', default=1, type=int, help='number of dataloader workers, i.e., multi-threaded processes')
     parser.add_argument('-o', '--outdir', default='/tmp', type=str, help='output directors (defaults to /tmp)', )
     parser.add_argument('-e', '--num-epochs', default=10, type=int, help='number of epochs', )
-    parser.add_argument('-r', '--resume', type=str, help='snapshot path to pretrained models with epoch and optimizer information', )
-    parser.add_argument('-f', '--finetune', type=str, help='finetune path to weights only')
+    parser.add_argument('-r', '--resume', default='', type=str, help='snapshot path to pretrained models with epoch and optimizer information', )
+    parser.add_argument('-f', '--finetune', default='', type=str, help='finetune path to weights only')
     parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate')
     parser.add_argument('-x', '--experiment', default="vhrs1s2", type=str, help="experiment name. Possible values: 'vhr', 's1', 's2', 'vhrs1, 'vhrs2', 'vhrs1s2' (default)")
     parser.add_argument('-a', '--lradapt', default=1, type=float, help='decrease learning rate incrementally. Defaults to 1: no decrease')

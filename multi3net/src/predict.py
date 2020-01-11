@@ -62,6 +62,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
 
     if torch.cuda.is_available():
         network = network.cuda()
+	
        # network = nn.DataParallel(network).cuda()
 
     if loadvgg:
@@ -71,8 +72,8 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
 	finetune = finetune + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
     else:
-	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                                       state = resume(finetune or snapshot, network, None)
-
+	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
+	state = resume(finetune or snapshot, network, None)
     return network
 
 
