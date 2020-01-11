@@ -24,11 +24,11 @@ from models.pspnet.pspnet_sentinel import psp34_sentinel1_and_sentinel2
 from models.pspnet.pspnet_fused import pspnet_fused_s2_10m
 from models.pspnet.pspnet_fused import pspnet_fused_s1_10m
 from models.pspnet.pspnet_fused_all import pspnet_fused_s1s2_10m
-from models.pspnet.psp_net import pspnet_10m
 from models.pspnet.psp_net import pspnet_10m_pre_post
 
 from models.model_fns import unet_basic_vhr
 from models.model_fns import unet_encoded_vhr
+from models.model_fns import pspnet_10m
 
 TRAINDATA_ENVIRONMENT_VARIABLE="TRAINDATA_PATH"
 VALIDATA_ENVIRONMENT_VARIABLE="VALIDATA_PATH"
@@ -68,7 +68,7 @@ def main(
     if experiment == "vhr_pre_post":
         network = pspnet_10m_pre_post()
     elif experiment == "vhr":
-        network = unet_basic_vhr()
+        network = pspnet_10m()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()
     elif experiment == "s2":
@@ -100,7 +100,7 @@ def main(
         train.iterations = state['iteration']
 
     #loss = DiceLoss(weight=torch.tensor([20]), sigmoid_normalization=False)
-    #class_weights = torch.tensor([1., 3.])
+#    class_weights = torch.tensor([1., 2.])
     loss = nn.NLLLoss2d()
     #loss = lovasz_softmax
     if torch.cuda.is_available():

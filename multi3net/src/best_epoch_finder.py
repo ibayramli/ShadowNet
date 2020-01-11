@@ -2,7 +2,7 @@ import os
 import argparse
 import numpy as np
 
-from predict import main as get_epoch_metrics
+from predict import main as predict
 
 NUM_CLASSES = 2
 
@@ -18,12 +18,10 @@ def get_best_weights(results_path='', weights=[2, 3, 4, 5, 6, 8, 9, 10, 'theoret
 	    path = os.path.join(results_path, 'predictions_' + w)
 	max_epoch, best_score = get_best_epoch_metrics(path)
         weight_dict[w] = (max_epoch, best_score)
-        print(weight_dict)
-   
-    print(weight_dict) 
+        print(weight_dict) 
     return weight_dict	
 
-def get_best_epoch_metrics(predictions_path=""):
+def get_best_epoch_metrics(predictions_path="", network_type='vhr'):
     if not predictions_path:
      	predictions_path = os.environ["RESULTS_PATH"]
 
@@ -32,17 +30,17 @@ def get_best_epoch_metrics(predictions_path=""):
     epoch_scores = {}   
     for i in range(num_epochs):
         print('Computing test output of epoch {}'.format(str(i+1)))
-	epoch_metrics = get_epoch_metrics(
+	epoch_metrics = predict(
 		        	batch_size=8,
 			    nworkers=1,
 			    datadir=None,
 			    outdir='.',
 			    num_epochs=i+1,
 			    snapshot=None,
-			    finetune=None,
+			    finetune=predictions_path,
 		        n_classes=2,
 			    loadvgg=False,
-			    network_type='vhr_pre_post',
+			    network_type=network_type,
 			    write=False,
 			    num_test=10  
 			)
@@ -66,10 +64,15 @@ if __name__ == '__main__':
         type=str,
         help='path to the results folder, if not given defaults to the environmental variable RESULTS_PATH',
     )
+    parser.add_argument(
+        '-n', '--network_type',
+        type=str,
+        help='network type; defaults to vhr',
+    )
     args = parser.parse_args()
 
     try:
-	get_best_epoch_metrics(args.path)
+	get_best_epoch_metrics(args.path, args.network_type)
     except KeyboardInterrupt:
 	pass
     finally:

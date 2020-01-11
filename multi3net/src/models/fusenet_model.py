@@ -216,7 +216,8 @@ class FuseNet(nn.Module):
 class UNet(nn.Module):
     def __init__(self, n_channels, n_classes):
         super(UNet, self).__init__()
-
+	
+	self.n_classes = n_classes
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
@@ -251,7 +252,8 @@ class UNet(nn.Module):
         x = self.up4(x, x1)
         x = self.outc(x)
 
-        return x
+	class_idx = x.size().index(self.n_classes)
+        return F.log_softmax(x, dim=class_idx)
 
 def merge_by_interpolation(list_of_tensors,size=(960,960), mode='bilinear', align_corners=True):
 

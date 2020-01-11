@@ -258,8 +258,8 @@ class UNet(nn.Module):
             # return F.tanh(x)
             return x
         else:
-            # return F.log_softmax(x, dim=self.n_classes)
-            return x
+	    class_idx = x.size().index(self.n_classes)
+            return F.log_softmax(x, dim=class_idx)
 
     def load_state_dict(self, state_dict):
         own_state = self.state_dict()

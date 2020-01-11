@@ -5,7 +5,7 @@ from models.unet_model import UNet
 
 
 def pspnet_10m():
-    model = PSPNet(resnet34(pretrained=True), psp_size=512)
+    model = PSPNet(resnet34(input_channels=3, pretrained=False), psp_size=512)
     return model
 
 def pspnet_10m_pre_post():

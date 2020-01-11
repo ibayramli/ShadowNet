@@ -286,17 +286,14 @@ class Trainer(object):
         for iteration, data in enumerate(dataloader):
             optimizer.zero_grad()
 
-            tile, input, target_tensor = data          
+            tile, input, target_tensor = data       	
 
-            print(torch.cuda.memory_allocated(device=0))
-            print(torch.cuda.memory_allocated(device=1))
             for key in input.keys():
                 input[key] = tensor_to_variable(input[key])
 	    target = tensor_to_variable(target_tensor[0]) 
-            w1 = imbalance_coef(target_tensor[0], max_val=3.)  
+#            w1 = imbalance_coef(target_tensor[0], max_val=3.)  
 
             output = network.forward(input)
-
             # pspnet_fused return tuples if intermediate classification maps -> take last, that is the fused one
             if type(output)==tuple:
                 output = output[-1]

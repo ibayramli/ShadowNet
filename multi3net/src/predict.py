@@ -22,12 +22,11 @@ import os.path as pt
 from models.segnet import segnet
 from models.unet_model import UNet
 from models.fusenet_model import FuseNet
-from models.pspnet.psp_net import pspnet_10m
-from models.pspnet.psp_net import pspnet_10m_pre_post
 
 from utils.dataloader import train_xbd_data_loader
 from utils.dataloader import val_xbd_data_loader
 
+from models.model_fns import * 
 
 from models.damage.damage_net_vhr import damage_net_vhr
 from models.damage.damaged_net_fusion_simple import damage_net_vhr_fusion_simple
@@ -42,7 +41,8 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
     if network_type == 'vhr_pre_post':
         network = pspnet_10m_pre_post()
     elif network_type == 'vhr':
-        network = pspnet_10m()
+	print('Loaded the correct network type')
+        network = unet_basic_vhr()
     elif network_type == 'baseline_vhr':
         network = damage_net_vhr(n_classes=n_classes)
         network.load_state_dict(model_zoo.load_url(
@@ -67,9 +67,11 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
     if loadvgg:
         network.load_vgg16_weights()
 
-    if finetune or snapshot or num_epochs:
-	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
+    if finetune or snapshot:
+	finetune = finetune + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
+    else:
+	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                                       state = resume(finetune or snapshot, network, None)
 
     return network
 
