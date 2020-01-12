@@ -1,0 +1,104 @@
+could not find visdom package. try 'pip install visdom'. continue without...
+Could not load NGC telemetry!
+Computing test output of epoch 1
+Loaded the correct network type
+load model
+{'Acc': 0.972708100714381, 'Kappa': 0.2620029742610496, 'precision_background': 0.9887651276646887, 'recall_building': 0.3265676718371763, 'recall_background': 0.983401619406069, 'mAcc': 0.6549846456216224, 'iou_background': 0.9725369620137908, 'precision_building': 0.26198958890008367, 'iou_building': 0.16032411933547158, 'f1_building': 0.27501856884689757, 'f1_background': 0.9860592085913955, 'mIoU': 0.5664305406746312}
+The f_1 + iou_building score is: 0.435342688182
+Computing test output of epoch 2
+Loaded the correct network type
+load model
+{'Acc': 0.9683127738464445, 'Kappa': 0.19299955751378176, 'precision_background': 0.9779771318010482, 'recall_building': 0.16377704403232426, 'recall_background': 0.9897196328779468, 'mAcc': 0.5767483384551357, 'iou_background': 0.9681585211374392, 'precision_building': 0.2918982664569541, 'iou_building': 0.11733532511805433, 'f1_building': 0.20757708358818946, 'f1_background': 0.9838096447504846, 'mIoU': 0.5427469231277466}
+The f_1 + iou_building score is: 0.324912408706
+Computing test output of epoch 3
+Loaded the correct network type
+load model
+{'Acc': 0.9857303072535804, 'Kappa': 0.4087037280831403, 'precision_background': 0.9901842448669462, 'recall_building': 0.3459634980038896, 'recall_background': 0.9953772278073952, 'mAcc': 0.6706703629056424, 'iou_background': 0.9856542569952482, 'precision_building': 0.52730293792532, 'iou_building': 0.2629681222463984, 'f1_building': 0.4155446674027373, 'f1_background': 0.9927729870109185, 'mIoU': 0.6243111896208233}
+The f_1 + iou_building score is: 0.678512789649
+Computing test output of epoch 4
+Loaded the correct network type
+load model
+{'Acc': 0.9803205675643587, 'Kappa': 0.4076922896620799, 'precision_background': 0.9888746699858603, 'recall_building': 0.41098005001265464, 'recall_background': 0.9910819451796673, 'mAcc': 0.7010309975961608, 'iou_background': 0.9801665662836996, 'precision_building': 0.4385373484369893, 'iou_building': 0.26403051596163263, 'f1_building': 0.41754363476949646, 'f1_background': 0.9899728483349597, 'mIoU': 0.6220985411226662}
+The f_1 + iou_building score is: 0.681574150731
+Computing test output of epoch 5
+Loaded the correct network type
+load model
+{'Acc': 0.9837858130581795, 'Kappa': 0.47579333718119765, 'precision_background': 0.9927560013228923, 'recall_building': 0.5174333686142913, 'recall_background': 0.9907681679909702, 'mAcc': 0.7541007683026307, 'iou_background': 0.9836573740304335, 'precision_building': 0.4582305815947733, 'iou_building': 0.31942844817797045, 'f1_building': 0.483965941036648, 'f1_background': 0.991759934419807, 'mIoU': 0.6515429111042019}
+The f_1 + iou_building score is: 0.803394389215
+Computing test output of epoch 6
+Loaded the correct network type
+load model
+{'Acc': 0.9859739364045007, 'Kappa': 0.4567607909723158, 'precision_background': 0.9884915402609481, 'recall_building': 0.3516831532581543, 'recall_background': 0.9973356815665587, 'mAcc': 0.6745094174123565, 'iou_background': 0.9858904910324512, 'precision_building': 0.6939914203186697, 'iou_building': 0.3044466429152868, 'f1_building': 0.46295744628553354, 'f1_background': 0.992891776763457, 'mIoU': 0.6451685669738689}
+The f_1 + iou_building score is: 0.767404089201
+Computing test output of epoch 7
+Loaded the correct network type
+load model
+{'Acc': 0.9816721336141464, 'Kappa': 0.5533541595769581, 'precision_background': 0.9900411877485331, 'recall_building': 0.5501509175188373, 'recall_background': 0.9912395791201899, 'mAcc': 0.7706952483195136, 'iou_background': 0.9814529732843358, 'precision_building': 0.578972972504548, 'iou_building': 0.3924724604290209, 'f1_building': 0.5626826534771139, 'f1_background': 0.9906387901165722, 'mIoU': 0.6869627168566784}
+The f_1 + iou_building score is: 0.955155113906
+Computing test output of epoch 8
+Loaded the correct network type
+load model
+{'Acc': 0.9882162355903595, 'Kappa': 0.462131874981464, 'precision_background': 0.9936779021679669, 'recall_building': 0.4682963577759899, 'recall_background': 0.9943865072306494, 'mAcc': 0.7313414325033197, 'iou_background': 0.988140020792812, 'precision_building': 0.48170825277970586, 'iou_building': 0.3092681471515374, 'f1_building': 0.46804244484894386, 'f1_background': 0.9940316963747939, 'mIoU': 0.6487040839721747}
+The f_1 + iou_building score is: 0.777310592
+Computing test output of epoch 9
+Loaded the correct network type
+load model
+{'Acc': 0.9779337560610164, 'Kappa': 0.40122234751559427, 'precision_background': 0.9802126567591849, 'recall_building': 0.2836508571706322, 'recall_background': 0.9974452620788302, 'mAcc': 0.6405480596247313, 'iou_background': 0.9777627924018505, 'precision_building': 0.7512729442083772, 'iou_building': 0.25916207569866795, 'f1_building': 0.4099218570500665, 'f1_background': 0.9887446476461553, 'mIoU': 0.6184624340502592}
+The f_1 + iou_building score is: 0.669083932749
+Computing test output of epoch 10
+Loaded the correct network type
+load model
+{'Acc': 0.9840250462340929, 'Kappa': 0.62350079743254, 'precision_background': 0.9941682286722209, 'recall_building': 0.7111427252203639, 'recall_background': 0.9894775816446337, 'mAcc': 0.8503101534324988, 'iou_background': 0.9837825949932408, 'precision_building': 0.5691459556679294, 'iou_building': 0.4617923442429278, 'f1_building': 0.6315795913632083, 'f1_background': 0.9918167455686977, 'mIoU': 0.7227874696180843}
+The f_1 + iou_building score is: 1.09337193561
+Computing test output of epoch 11
+Loaded the correct network type
+load model
+{'Acc': 0.9888734255470928, 'Kappa': 0.428741026951438, 'precision_background': 0.9906084624466864, 'recall_building': 0.31456275977386405, 'recall_background': 0.9981704503294211, 'mAcc': 0.6563666050516426, 'iou_background': 0.9888170895590026, 'precision_building': 0.7123201777866003, 'iou_building': 0.2785870966794954, 'f1_building': 0.43355270484299063, 'f1_background': 0.9943735564320362, 'mIoU': 0.633702093119249}
+The f_1 + iou_building score is: 0.712139801522
+Computing test output of epoch 12
+Loaded the correct network type
+load model
+{'Acc': 0.9844060515316704, 'Kappa': 0.5737708883401773, 'precision_background': 0.9900200318546816, 'recall_building': 0.5267962522964819, 'recall_background': 0.994095454859296, 'mAcc': 0.760445853577889, 'iou_background': 0.9842366405152893, 'precision_building': 0.6502058952391319, 'iou_building': 0.4113431762028454, 'f1_building': 0.5816105012497733, 'f1_background': 0.9920529806476972, 'mIoU': 0.6977899083590671}
+The f_1 + iou_building score is: 0.992953677453
+Computing test output of epoch 13
+Loaded the correct network type
+load model
+{'Acc': 0.9810389881332714, 'Kappa': 0.6044914620567298, 'precision_background': 0.9865258400890144, 'recall_building': 0.5359354156820285, 'recall_background': 0.9940487721143425, 'mAcc': 0.7649920938981856, 'iou_background': 0.9807404934076306, 'precision_building': 0.7208402779816032, 'iou_building': 0.44371040487686, 'f1_building': 0.6139689470636756, 'f1_background': 0.9902711925557813, 'mIoU': 0.7122254491422451}
+The f_1 + iou_building score is: 1.05767935194
+Computing test output of epoch 14
+Loaded the correct network type
+load model
+{'Acc': 0.9687152997983827, 'Kappa': 0.5420469179590486, 'precision_background': 0.9778870384732553, 'recall_building': 0.4821522886943271, 'recall_background': 0.9897020849376789, 'mAcc': 0.735927186816003, 'iou_background': 0.968068465096434, 'precision_building': 0.6637900464360091, 'iou_building': 0.38721543273861214, 'f1_building': 0.5577813335865451, 'f1_background': 0.9837493445455197, 'mIoU': 0.677641948917523}
+The f_1 + iou_building score is: 0.944996766325
+Computing test output of epoch 15
+Loaded the correct network type
+load model
+{'Acc': 0.9710779806640414, 'Kappa': 0.5774332282262671, 'precision_background': 0.9802984938009154, 'recall_building': 0.5255485137213388, 'recall_background': 0.9897511628495275, 'mAcc': 0.7576498382854332, 'iou_background': 0.9704525722394373, 'precision_building': 0.6817864956684752, 'iou_building': 0.4216221780842164, 'f1_building': 0.59211702141237, 'f1_background': 0.9849991738189301, 'mIoU': 0.6960373751618267}
+The f_1 + iou_building score is: 1.0137391995
+Computing test output of epoch 16
+Loaded the correct network type
+load model
+{'Acc': 0.9799803520384289, 'Kappa': 0.6048393544647989, 'precision_background': 0.984382966318913, 'recall_building': 0.5117260429404162, 'recall_background': 0.9951054174141373, 'mAcc': 0.7534157301772767, 'iou_background': 0.9796458332394742, 'precision_building': 0.7702812328282043, 'iou_building': 0.44396572822359426, 'f1_building': 0.6146781991441396, 'f1_background': 0.9897130400199561, 'mIoU': 0.7118057807315342}
+The f_1 + iou_building score is: 1.05864392737
+Computing test output of epoch 17
+Loaded the correct network type
+load model
+{'Acc': 0.9835338726876275, 'Kappa': 0.6003013914668444, 'precision_background': 0.987872878505821, 'recall_building': 0.5193104322497543, 'recall_background': 0.9953307583628799, 'mAcc': 0.7573205953063171, 'iou_background': 0.9833179951889438, 'precision_building': 0.7363805722945613, 'iou_building': 0.43818230369247074, 'f1_building': 0.6084327950726831, 'f1_background': 0.9915868643880982, 'mIoU': 0.7107501494407074}
+The f_1 + iou_building score is: 1.04661509877
+Computing test output of epoch 18
+Loaded the correct network type
+load model
+{'Acc': 0.9870998613749231, 'Kappa': 0.6373811890709149, 'precision_background': 0.9901575005297127, 'recall_building': 0.54627827115866, 'recall_background': 0.9967169883487014, 'mAcc': 0.7714976297536807, 'iou_background': 0.9869404596883635, 'precision_building': 0.7852185939884059, 'iou_building': 0.4748360700067214, 'f1_building': 0.6437363059960687, 'f1_background': 0.993425756483094, 'mIoU': 0.7308882648475424}
+The f_1 + iou_building score is: 1.118572376
+Computing test output of epoch 19
+Loaded the correct network type
+load model
+{'Acc': 0.979828478036419, 'Kappa': 0.5291047840015337, 'precision_background': 0.9862665187829739, 'recall_building': 0.4656770180178406, 'recall_background': 0.9930760405788174, 'mAcc': 0.7293765292983291, 'iou_background': 0.9795528389071118, 'precision_building': 0.641605453541801, 'iou_building': 0.36931194966157904, 'f1_building': 0.5391913230418243, 'f1_background': 0.9896586049140517, 'mIoU': 0.6744323942843453}
+The f_1 + iou_building score is: 0.908503272703
+Computing test output of epoch 20
+Loaded the correct network type
+load model
+{'Acc': 0.9722572620425906, 'Kappa': 0.5317200332762085, 'precision_background': 0.9796579004240046, 'recall_building': 0.4609580401240262, 'recall_background': 0.9918042022743547, 'mAcc': 0.7263811211991903, 'iou_background': 0.97178034760817, 'precision_building': 0.6825561221481677, 'iou_building': 0.3750842380317466, 'f1_building': 0.5453531032487906, 'f1_background': 0.98568344424973, 'mIoU': 0.6734322928199583}
+The f_1 + iou_building score is: 0.920437341281
+The best epoch is: 17 with a epoch score of 1.118572376
+()

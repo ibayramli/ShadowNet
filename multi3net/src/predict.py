@@ -62,8 +62,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
 
     if torch.cuda.is_available():
         network = network.cuda()
-	
-       # network = nn.DataParallel(network).cuda()
+ 	network = nn.DataParallel(network).cuda()
 
     if loadvgg:
         network.load_vgg16_weights()
@@ -226,11 +225,13 @@ if __name__ == '__main__':
     parser.add_argument(
         '-r', '--resume',
         type=text_type,
+	default='',
         help='snapshot path',
     )
     parser.add_argument(
         '-f', '--finetune',
         type=text_type,
+	default='',
         help='finetune path',
     )
     parser.add_argument(
