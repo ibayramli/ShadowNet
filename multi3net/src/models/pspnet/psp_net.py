@@ -2,7 +2,7 @@
 from torch.autograd import Variable
 
 from models.pspnet.resnet import *
-
+from models.unet_parts import double_conv
 
 class PSPModule(nn.Module):
     def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
@@ -56,9 +56,8 @@ class PSPNet(nn.Module):
 
         self.drop_2 = nn.Dropout2d(p=0.15)
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1),
-#            nn.LogSoftmax()
-        )
+            nn.Conv2d(64, n_classes, kernel_size=1)
+            )
 
     @staticmethod
     def _module_parameters(*modules):
@@ -109,6 +108,8 @@ class PSPNet(nn.Module):
             self, filter_state(own_state, state_dict)
         )
 
+
+
 def pspnet_10m():
     model = PSPNet(resnet34(pretrained=True), psp_size=512)
     return model
@@ -121,7 +122,6 @@ def pspnet_2m():
     model = PSPNet(resnet34(pretrained=True), psp_size=512,
                    upsample_factors=[2, 2, 1])
     return model
-
 
 def pspnet_special():
     model = PSPNet(resnet34(pretrained=True), psp_size=512,

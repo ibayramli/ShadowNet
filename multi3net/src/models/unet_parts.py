@@ -59,10 +59,10 @@ class up_nonskip(nn.Module):
 
 
 class up_skip(nn.Module):
-    def __init__(self, in_ch, out_ch, stride=2):
+    def __init__(self, in_ch, out_ch, stride=2, halved_input=True):
         super(up_skip, self).__init__()
 
-        self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=stride)
+        self.up = nn.ConvTranspose2d(in_ch//2 if halved_input else in_ch, in_ch//2, 2, stride=stride)
         self.conv = double_conv(in_ch, out_ch)
 
     def forward(self, x1, x2):

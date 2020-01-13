@@ -1,7 +1,8 @@
-
 # full assembly of the sub-parts to form the complete net
 
 from .unet_parts import *
+
+import math
 
 import torch
 from torch.autograd import Variable
@@ -11,11 +12,12 @@ from torch.nn import functional as F
 from six import text_type
 from six import binary_type
 from collections import OrderedDict
+
 from models.damage.psp_net_fusion import AttentionNetSimple
+from models.pspnet.psp_net import PSPModule
 
 from utils.trainer import tensor_to_variable
 
-import math
 
 
 class FuseNet(nn.Module):
@@ -217,7 +219,7 @@ class UNet(nn.Module):
     def __init__(self, n_channels, n_classes):
         super(UNet, self).__init__()
 	
-	self.n_classes = n_classes
+	    self.n_classes = n_classes
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
@@ -226,7 +228,7 @@ class UNet(nn.Module):
         self.up1 = up_skip(1024, 256)
         self.up2 = up_skip(512, 128)
         self.up3 = up_skip(256, 64)
-        self.up4 = up_skip(128, 64)
+        self.up4 = up_skip(128, 64)`
         self.outc = outconv(64, n_classes)
 
         for m in self.modules():
@@ -252,7 +254,50 @@ class UNet(nn.Module):
         x = self.up4(x, x1)
         x = self.outc(x)
 
-	class_idx = x.size().index(self.n_classes)
+    	class_idx = x.size().index(self.n_classes)
+        return F.log_softmax(x, dim=class_idx)
+
+class UNet_PSP(nn.Module):
+    def __init__(self, n_channels, n_classes, psp_sizes=(1, 2, 3, 6)):
+        super(UNet, self).__init__()
+	
+	    self.n_classes = n_classes
+        self.inc = inconv(n_channels, 64)
+        self.down1 = down(64, 128)
+        self.down2 = down(128, 256)
+        self.down3 = down(256, 512)
+        self.psp = PSPModule(512, 1024, psp_sizes)
+        self.conv = double_conv(1024, 512)
+
+        self.up2 = up_skip(512, 256, halved_input=False)
+        self.up3 = up_skip(256, 128, halved_input=False)
+        self.up4 = up_skip(128, 64, halved_input=False)
+        self.outc = outconv(64, n_classes)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+
+    def forward(self, input):
+        x = tensor_to_variable(input['vhr'])
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        
+        x = self.psp(x4)
+        x = self.conv(x)
+        x = self.up2(x, x3)
+        x = self.up3(x, x2)
+        x = self.up4(x, x1)
+        x = self.outc(x)
+
+    	class_idx = x.size().index(self.n_classes)
         return F.log_softmax(x, dim=class_idx)
 
 def merge_by_interpolation(list_of_tensors,size=(960,960), mode='bilinear', align_corners=True):
