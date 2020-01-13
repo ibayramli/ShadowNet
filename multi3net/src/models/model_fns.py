@@ -8,6 +8,10 @@ def pspnet_10m():
     model = PSPNet(resnet34(input_channels=3, pretrained=False), psp_size=512)
     return model
 
+def pspnet_upsample():
+    model = PSPNet(resnet34(input_channels=3, pretrained=False), psp_size=512, upsample_factors=[2, 2, 2])
+    return model
+
 def pspnet_10m_pre_post():
     model = PSPNet(resnet34(input_channels=6, pretrained=False), psp_size=512)
     return model

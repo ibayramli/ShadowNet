@@ -66,8 +66,8 @@ def main(
     if experiment == "vhr_pre_post":
         network = pspnet_10m_pre_post()
     elif experiment == "vhr":
-	print('Network is loaded correctly')
-        network = unet_psp()
+	    print('Network is loaded correctly')
+        network = pspnet_upsample()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()
     elif experiment == "s2":
