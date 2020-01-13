@@ -18,3 +18,4 @@ def unet_basic_vhr():
 
 def unet_psp():
     model = UNet_PSP(3, 2)
+    return model

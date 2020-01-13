@@ -90,6 +90,7 @@ def main(
 
     if finetune or snapshot:
         resume(finetune or snapshot, network, None)
+
     optimizer = optim.Adam(network.parameters(), lr=lr)
 
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=lradapt)

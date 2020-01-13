@@ -1,6 +1,6 @@
 # full assembly of the sub-parts to form the complete net
 
-from .unet_parts import *
+from unet_parts import *
 
 import math
 
@@ -219,7 +219,7 @@ class UNet(nn.Module):
     def __init__(self, n_channels, n_classes):
         super(UNet, self).__init__()
 	
-	    self.n_classes = n_classes
+        self.n_classes = n_classes
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
@@ -228,7 +228,7 @@ class UNet(nn.Module):
         self.up1 = up_skip(1024, 256)
         self.up2 = up_skip(512, 128)
         self.up3 = up_skip(256, 64)
-        self.up4 = up_skip(128, 64)`
+        self.up4 = up_skip(128, 64)
         self.outc = outconv(64, n_classes)
 
         for m in self.modules():
@@ -259,9 +259,9 @@ class UNet(nn.Module):
 
 class UNet_PSP(nn.Module):
     def __init__(self, n_channels, n_classes, psp_sizes=(1, 2, 3, 6)):
-        super(UNet, self).__init__()
+        super(UNet_PSP, self).__init__()
 	
-	    self.n_classes = n_classes
+        self.n_classes = n_classes
         self.inc = inconv(n_channels, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
