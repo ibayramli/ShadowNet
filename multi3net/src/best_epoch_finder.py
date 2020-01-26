@@ -25,8 +25,7 @@ def get_best_epoch_metrics(predictions_path="", network_type='vhr'):
     if not predictions_path:
      	predictions_path = os.environ["RESULTS_PATH"]
 
-    num_epochs = len([name for name in os.listdir(os.path.join(predictions_path, 'vhr_buildings10m')) if name.endswith('.pth')])
- 
+    num_epochs = len([name for name in os.listdir(os.path.join(predictions_path, 'vhr_buildings10m')) if name.endswith('.pth')]) 
     epoch_scores = {}   
     for i in range(num_epochs):
         print('Computing test output of epoch {}'.format(str(i+1)))
@@ -42,17 +41,14 @@ def get_best_epoch_metrics(predictions_path="", network_type='vhr'):
 			    loadvgg=False,
 			    network_type=network_type,
 			    write=False,
-			    num_test=10  
-			)
+			    num_test=50) 
 
-	score = epoch_metrics['f1_building'] + epoch_metrics['iou_building']
-	epoch_scores[i] = score
+	epoch_scores[i] = epoch_metrics['iou_building']
    	print(epoch_metrics)
-	print('The f_1 + iou_building score is: {}'.format(score))
 
     max_epoch = max(epoch_scores.iterkeys(), key=(lambda key: epoch_scores[key]))
-    print('The best epoch is: {} with a epoch score of {}'.format(max_epoch, epoch_scores[max_epoch]))
-    return (max_epoch, epoch_scores[max_epoch])
+    print('The best epoch is: {} with average iou of {}'.format(max_epoch, epoch_scores[max_epoch]))
+    return None
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -77,3 +73,4 @@ if __name__ == '__main__':
 	pass
     finally:
 	print()
+

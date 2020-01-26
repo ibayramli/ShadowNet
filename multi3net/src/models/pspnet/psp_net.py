@@ -46,6 +46,7 @@ class PSPNet(nn.Module):
         super(PSPNet, self).__init__()
         self.backend = backend
         self.p_combined = None
+	self.n_classes = n_classes	
 
         self.psp = PSPModule(psp_size, 1024, sizes)
         self.drop_1 = nn.Dropout2d(p=0.3)
@@ -91,8 +92,9 @@ class PSPNet(nn.Module):
         p2 = self.final(p1)
 
         self.p_combined = torch.cat([p1, p2], dim=1)
-
-        return F.log_softmax(p2)
+	
+	class_idx = p2.size().index(self.n_classes)
+        return F.log_softmax(p2, dim=class_idx)
 
 
     def load_state_dict(self, state_dict):
