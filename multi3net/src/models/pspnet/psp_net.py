@@ -9,7 +9,7 @@ class PSPModule(nn.Module):
         super(PSPModule, self).__init__()
         self.stages = []
         self.stages = nn.ModuleList([self._make_stage(features, size) for size in sizes])
-        self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1)
+        self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1) # +1 because we concat. infeatures as wells
         self.relu = nn.ReLU()
 
     def _make_stage(self, features, size):
