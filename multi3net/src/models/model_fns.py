@@ -23,8 +23,8 @@ def unet_psp():
     model = UNet_PSP(3, 2)
     return model
 
-def fusenet(encoder_path=''):
-    encoder = unet_encoder(3, encoder_path)
+def fusenet(encoder_path):
+    encoder = unet_encoder(3, 2, encoder_path)
     model = FUseNet(3, 2, encoder)
 
     return model

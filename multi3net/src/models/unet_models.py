@@ -201,41 +201,48 @@ class FUseNet(nn.Module):
 
 
 
-class UNet_Encoder(nn.Module):
-    def __init__(self, n_channels):
-        super(UNet_Encoder, self).__init__()
+# class UNet_Encoder(nn.Module):
+#     def __init__(self, n_channels):
+#         super(UNet_Encoder, self).__init__()
 	
-        self.inc = inconv(n_channels, 64)
+#         self.inc = inconv(n_channels, 64)
 
-        self.down1 = down(64, 128)
-        self.down2 = down(128, 256)
-        self.down3 = down(256, 512)
-        self.down4 = down(512, 512)
+#         self.down1 = down(64, 128)
+#         self.down2 = down(128, 256)
+#         self.down3 = down(256, 512)
+#         self.down4 = down(512, 512)
     
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+#         for m in self.modules():
+#             if isinstance(m, nn.Conv2d):
+#                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+#                 m.weight.data.normal_(0, math.sqrt(2. / n))
+#             elif isinstance(m, nn.BatchNorm2d):
+#                 m.weight.data.fill_(1)
+#                 m.bias.data.zero_()
 
 
-    def forward(input):
-        x1 = self.inc(input)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x5 = self.down4(x4)
+#     def forward(input):
+#         x1 = self.inc(input)
+#         x2 = self.down1(x1)
+#         x3 = self.down2(x2)
+#         x4 = self.down3(x3)
+#         x5 = self.down4(x4)
 
-        return x5
+#         return x5
+ 
 
-
-def unet_encoder(in_channels, encoder_path=''):
-    model = UNet_Encoder(in_channels)
-    model = nn.DataParallel(model)
+def unet_encoder(in_channels, out_channels, encoder_path='', encoder_depth=5):
+    unet = UNet(in_channels, out_channels)
 
     if encoder_path:
-        state = resume(encoder_path, model, None)
+        try:
+            state = resume(encoder_path, unet, None)
+            encoder = nn.Sequential(nn.ModuleList(unet.children())[:encoder_depth])
+        
+        # The model is wrapped in DataParallel
+        except RuntimeError:
+            model = nn.DataParallel(unet)
+            state = resume(encoder_path, unet, None)
+            encoder = nn.ModuleList(list(unet.children())[0].children())[:encoder_depth] # Module has 1 child when wrapped in DataParallel
     
-    return model
+    return encoder
