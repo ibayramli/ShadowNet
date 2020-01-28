@@ -1,7 +1,6 @@
 from models.pspnet.resnet import *
 from models.pspnet.psp_net import PSPNet
-from models.fusenet_model import UNet
-from models.fusenet_model import UNet_PSP
+from models.unet_models import *
 
 
 def pspnet_10m():
@@ -23,3 +22,12 @@ def unet_basic_vhr():
 def unet_psp():
     model = UNet_PSP(3, 2)
     return model
+
+def fusenet(encoder_path=''):
+    encoder = unet_encoder(3, encoder_path)
+    model = FUseNet(3, 2, encoder)
+
+    return model
+
+
+
