@@ -291,7 +291,7 @@ class UNet_PSP(nn.Module):
         x2 = self.down1(x1)
         x3 = self.down2(x2)
         x4 = self.down3(x3)
-        x5 = self.down3(x4)
+        x5 = self.down4(x4)
         
         x = self.psp(x5)
         x = self.up1(x, x4)
