@@ -19,17 +19,11 @@ import pandas as pd
 import torch.utils.model_zoo as model_zoo
 
 import os.path as pt
-from models.segnet import segnet
-from models.unet_model import UNet
-from models.fusenet_model import FuseNet
 
 from utils.dataloader import train_xbd_data_loader
 from utils.dataloader import val_xbd_data_loader
 
 from models.model_fns import * 
-
-from models.damage.damage_net_vhr import damage_net_vhr
-from models.damage.damaged_net_fusion_simple import damage_net_vhr_fusion_simple
 
 from utils import resume
 
@@ -42,7 +36,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
         network = pspnet_10m_pre_post()
     elif network_type == 'vhr':
 	print('Loaded the correct network type')
-        network = unet_basic_vhr()
+        network = unet_psp()
     elif network_type == 'baseline_vhr':
         network = damage_net_vhr(n_classes=n_classes)
         network.load_state_dict(model_zoo.load_url(
@@ -100,7 +94,7 @@ def main(
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val')
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test')
 
     metric = classmetric.ClassMetric()
     loss_str_list = []

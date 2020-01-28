@@ -37,3 +37,14 @@ def resume(path, model, optimizer):
     if optimizer is not None and optimizer_state is not None:
         optimizer.load_state_dict(optimizer_state)
     return snapshot
+
+# def need_data_parallel(snapshot, weights):
+#     snap_l1 = snapshot.state_dict().keys()[0]
+#     weight_l1 = weights['model_state'].keys()[0]
+
+#     if snap_l1 == weight_l1:
+#         return False
+
+#     if len(snap_l1 > weight_l1):
+
+    
