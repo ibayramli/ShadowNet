@@ -118,10 +118,6 @@ class FUseNet(nn.Module):
         self.n_classes = n_classes
         self.post_encoder = post_encoder
 
-#        self.activations = {}
-#        for name, module in self.post_encoder.named_children():
-#            module.register_forward_hook(self.get_activations(name))
-
         self.inc = inconv(n_channels, 64)
 	
         self.conv0 = nn.Conv2d(128, 64, kernel_size=1)
@@ -199,8 +195,6 @@ class FUseNet(nn.Module):
 
         return F.log_softmax(x, dim=1)
 
-
-
 class UNet_Encoder(nn.Module):
     def __init__(self, n_channels):
         super(UNet_Encoder, self).__init__()
@@ -253,3 +247,52 @@ def unet_encoder(in_channels, out_channels, encoder_path, encoder_depth=5):
 
     unet_enc.load_state_dict(unet_state)
     return unet_enc
+
+
+# Implementation of a model from https://arxiv.org/pdf/1810.08462.pdf
+class FC_EF(nn.Module):    
+    def __init__(self, n_channels, n_classes):
+        super(FC_EF, self).__init__()
+	
+        self.n_classes = n_classes
+        self.inc = inconv(2*n_channels, 64)
+        self.down1 = down(64, 128)
+        self.down2 = down(128, 256)
+        self.down3 = down(256, 512)
+        self.down4 = down(512, 512)
+        self.up1 = up_skip(1024, 256)
+        self.up2 = up_skip(512, 128)
+        self.up3 = up_skip(256, 64)
+        self.up4 = up_skip(128, 64)
+        self.outc = outconv(64, n_classes)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+
+    def forward(self, input):
+        post = tensor_to_variable(input['vhr_post'])
+        pre = tensor_to_variable(input['vhr_pre'])
+        x = torch.cat([pre, post])
+        
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x5 = self.down4(x4)
+ 
+        x = self.up1(x5, x4)
+        x = self.up2(x, x3)
+        x = self.up3(x, x2)
+        x = self.up4(x, x1)
+        x = self.outc(x)
+
+
+    	class_idx = x.size().index(self.n_classes)
+        return F.log_softmax(x, dim=class_idx)
+
