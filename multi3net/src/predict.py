@@ -123,13 +123,13 @@ def main(
         output_raw = torch.nn.functional.upsample(output_raw, size=(h, w), mode='bilinear')
          
         # Normalize
-        if n_classes == 1:
-            output = output_raw
-        else:
-            soft = nn.Softmax2d()
-            output = soft(output_raw)
+        #if n_classes == 1:
+        #    output = output_raw
+        #else:
+        #    soft = nn.Softmax2d()
+        #    output = soft(output_raw)
  
-        train_metric = metric(target, output)
+        train_metric = metric(target, output_raw)
         
         if not write:
             metric_dicts.append(train_metric)
