@@ -19,11 +19,16 @@ import pandas as pd
 import torch.utils.model_zoo as model_zoo
 
 import os.path as pt
+from models.segnet import segnet
+from models.unet_models import UNet
 
 from utils.dataloader import train_xbd_data_loader
 from utils.dataloader import val_xbd_data_loader
 
 from models.model_fns import * 
+
+from models.damage.damage_net_vhr import damage_net_vhr
+from models.damage.damaged_net_fusion_simple import damage_net_vhr_fusion_simple
 
 from utils import resume
 
@@ -36,7 +41,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
         network = pspnet_10m_pre_post()
     elif network_type == 'vhr':
 	print('Loaded the correct network type')
-        network = unet_psp()
+        network = unet_basic_vhr()
     elif network_type == 'baseline_vhr':
         network = damage_net_vhr(n_classes=n_classes)
         network.load_state_dict(model_zoo.load_url(
@@ -68,6 +73,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
 	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
 	state = resume(finetune or snapshot, network, None)
 
+    print(finetune)
     return network
 
 
@@ -94,7 +100,7 @@ def main(
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test')
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val')
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
@@ -120,10 +126,8 @@ def main(
         if n_classes == 1:
             output = output_raw
         else:
-           # soft = nn.Softmax2d()
-           # output = soft(output_raw)
-            output = torch.exp(output_raw)
-           
+            soft = nn.Softmax2d()
+            output = soft(output_raw)
  
         train_metric = metric(target, output)
         
@@ -163,9 +167,7 @@ def main(
                 writer.writerow([val])
 
     if not write:
-        metrics_df = pd.DataFrame(metric_dicts)
-        mean_metrics = metrics_df.mean()
-        return dict(mean_metrics)
+        return train_metric
  
 
 def tensor_to_variable(tensor):

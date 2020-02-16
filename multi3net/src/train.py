@@ -64,10 +64,10 @@ def main(
 
 
     if experiment == "vhr_pre_post":
-        network = pspnet_10m_pre_post()
+        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
     elif experiment == "vhr":
         print('Loaded model is: {}. '.format('unet_psp'))
-        network = unet_psp()
+        network = unet_basic_vhr()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()
     elif experiment == "s2":

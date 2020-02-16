@@ -41,7 +41,7 @@ def get_best_epoch_metrics(predictions_path="", network_type='vhr'):
 			    loadvgg=False,
 			    network_type=network_type,
 			    write=False,
-			    num_test=50) 
+			    num_test=9999999) 
 
 	epoch_scores[i] = epoch_metrics['iou_building']
    	print(epoch_metrics)
