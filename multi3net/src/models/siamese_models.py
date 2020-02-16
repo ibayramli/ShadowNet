@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.modules.padding import ReplicationPad2d
+from utils.trainer import tensor_to_variable
 
 class SiamUnet_conc(nn.Module):
     """SiamUnet_conc segmentation network."""
@@ -91,9 +92,10 @@ class SiamUnet_conc(nn.Module):
 
         self.sm = nn.LogSoftmax(dim=1)
 
-    def forward(self, x1, x2):
-
-        """Forward method."""
+    def forward(self, input):
+        x1 = tensor_to_variable(input['vhr_pre'])
+        x2 = tensor_to_variable(input['vhr_post'])
+        
         # Stage 1
         x11 = self.do11(F.relu(self.bn11(self.conv11(x1))))
         x12_1 = self.do12(F.relu(self.bn12(self.conv12(x11))))
@@ -260,8 +262,9 @@ class SiamUnet_diff(nn.Module):
 
         self.sm = nn.LogSoftmax(dim=1)
 
-    def forward(self, x1, x2):
-            
+    def forward(self, input):
+        x1 = tensor_to_variable(input['vhr_pre'])
+        x2 = tensor_to_variable(input['vhr_post'])
 
         """Forward method."""
         # Stage 1
