@@ -14,27 +14,23 @@ class XBDImageDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir="/n/tambe_lab/disaster_relief/xBD_data/data",
                  transform=None,
                  mode='train',
-                 pre_post=False):
-	if mode not in ['test', 'train', 'val']: 
-            raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
-	
-	self.pre_post = pre_post
-	self.mode = mode
-        self.root_dir = root_dir
-        self.n_classes = 2
-        self.tile_size = 1024 
-        self.validation = mode == 'val' 
-        self.transform = transform
-        self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
-        if self.pre_post:
-            self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
-        else:
-            self.pres = [] 
-        self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks')) if '_post' in pn]
-        self.augmentation = random_augment() if self.validation == False else random_augment(0)
+                 experiment=experiment):
 
-        if len(self.posts) != len(self.pres) and self.pre_post:
-            raise ValueError('Number of post-disaster and pre-disaster images don\'t match')
+	if mode not in ['test', 'train', 'val']: 
+        raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
+	
+	self.experiment = experiment
+	self.mode = mode
+    self.root_dir = root_dir
+    self.n_classes = 2
+    self.tile_size = 1024 
+    self.validation = mode != 'train' 
+    self.transform = transform
+    self.augmentation = random_augment() if self.validation == False else random_augment(0)
+    self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
+    self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
+    self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks')) if '_post' in pn]
+        
 
     def __len__(self):
         return len(self.posts)
@@ -70,7 +66,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
             return np.moveaxis(array, 2, 0)
 	
-	tile_size = self.tile_size
+	    tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
 
         img_vhr = tiff_to_nd_array(vhr_img_path).astype(float)
@@ -90,16 +86,18 @@ class XBDImageDataset(torch.utils.data.Dataset):
         post_cur = self.posts[idx]
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
         post = self.path_to_tensor(vhr_post_path)
-        if self.pre_post:
-	    inputs['vhr_post'] = post
-	else:
-	    inputs['vhr'] = post
 
-        if self.pre_post:
-            pre_cur = post_cur.replace('post', 'pre')
-            vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
-            pre = self.path_to_tensor(vhr_pre_path)
-            inputs['vhr_pre'] = pre	
+        pre_cur = post_cur.replace('post', 'pre')
+        vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
+        pre = self.path_to_tensor(vhr_pre_path)
+
+	    if self.experiment == 'post':
+	        inputs['vhr'] = post
+        elif self.experiment == 'pre':
+            inputs['vhr'] = pre
+        if self.experiment == 'pre_post':
+            inputs['vhr_pre'] = pre
+            inputs['vhr_post'] = post	            
 
         if post_cur in self.labels:
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', post_cur))
@@ -113,11 +111,11 @@ class XBDImageDataset(torch.utils.data.Dataset):
         return tile, inputs, (label, )
 
 def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                             mode='train', labelimage="buildings10m.tif", pre_post=False):
+                             mode='train', labelimage="buildings10m.tif", experiment=experiment):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
                            mode=mode, 
-                           pre_post=pre_post)
+                           experiment=experiment)
 
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
@@ -127,11 +125,11 @@ def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_m
     return dataloader
 
 def val_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                              mode='train', labelimage="buildings10m.tif", pre_post=False):
+                              mode='train', labelimage="buildings10m.tif", experiment=experiment):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
                            mode=mode, 
-                           pre_post=pre_post)
+                           experiment=experiment)
 
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,

@@ -51,7 +51,7 @@ def main(
     torch.manual_seed(0)
 
     # Visdom environment
-    visdom_environment = 'vhr' + "_" + labelimage.replace(".tif", "")
+    visdom_environment = 'vhr_' + experiment + '_' + labelimage.replace(".tif", "")
     outdir = os.path.join(outdir, visdom_environment)
 
     if validpath is None:
@@ -59,29 +59,17 @@ def main(
     if trainpath is None:
         trainpath = os.environ[TRAINDATA_ENVIRONMENT_VARIABLE]
 
-    train = train_xbd_data_loader(trainpath, batch_size=batch_size, shuffle=True, mode='train', num_workers=nworkers, pre_post=experiment=="vhr_pre_post")
-    val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers, pre_post=experiment=="vhr_pre_post") 
+    train = train_xbd_data_loader(trainpath, batch_size=batch_size, shuffle=True, mode='train', num_workers=nworkers, experiment=experiment)
+    val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers, experiment=experiment) 
 
 
-    if experiment == "vhr_pre_post":
-	network = siam_unet_diff()
+    if experiment == "pre_post":
+	    network = siam_unet_diff()
 #        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
-    elif experiment == "vhr":
+    elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
-    elif experiment == "s1":
-        network = input_keep_res_net_34_s1_all()
-    elif experiment == "s2":
-        network = input_keep_res_net_34_s2_all()
-    elif experiment == "vhrs1":
-        network = pspnet_fused_s1_10m()
-    elif experiment == "vhrs2":
-        network = pspnet_fused_s2_10m()
-    elif experiment == "s1s2":
-        network = psp34_sentinel1_and_sentinel2()
-    elif experiment == "vhrs1s2":
-        network = pspnet_fused_s1s2_10m()
     else:
-        raise ValueError("Please insert a valid experiment id. Valid experiments are 'vhr', 's1', 's2', 'vhrs1, 'vhrs2', 'vhrs1s2'")
+        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'per_post'")
 	
     if torch.cuda.device_count() > 1:
 	network = nn.DataParallel(network)

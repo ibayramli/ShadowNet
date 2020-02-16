@@ -226,8 +226,6 @@ class Trainer(object):
 
             for epoch in range(start_epoch + 1, num_epochs + 1):
                 self.logger.update_epoch(epoch)
-                # Print current memory usage for GPU
-                # print(torch.cuda.memory_allocated())
                 print('Epoch', epoch)
                 self.print_info()
                 a = time.time()

@@ -19,7 +19,6 @@ import pandas as pd
 import torch.utils.model_zoo as model_zoo
 
 import os.path as pt
-from models.segnet import segnet
 from models.unet_models import UNet
 
 from utils.dataloader import train_xbd_data_loader
@@ -27,37 +26,19 @@ from utils.dataloader import val_xbd_data_loader
 
 from models.model_fns import * 
 
-from models.damage.damage_net_vhr import damage_net_vhr
-from models.damage.damaged_net_fusion_simple import damage_net_vhr_fusion_simple
-
 from utils import resume
 
 from torch.autograd import Variable
 import cv2
 
 
-def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvgg):
-    if network_type == 'vhr_pre_post':
+def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg):
+    if experiment == 'pre_post':
         network = fc_ef()
-    elif network_type == 'vhr':
-	print('Loaded the correct network type')
+    elif experiment == 'pre' or experiment == 'post':
         network = unet_basic_vhr()
-    elif network_type == 'baseline_vhr':
-        network = damage_net_vhr(n_classes=n_classes)
-        network.load_state_dict(model_zoo.load_url(
-            'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
-    elif network_type == 'baseline_s1':
-        network = damage_net_s1(n_classes=n_classes)
-        network.load_state_dict(model_zoo.load_url(
-            'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
-    elif network_type == 'baseline_s2':
-        network = damage_net_s2(n_classes=n_classes)
-        network.load_state_dict(model_zoo.load_url(
-            'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
-    elif network_type == 'damagenet_fusion_simple':
-        network = damage_net_vhr_fusion_simple(n_classes=n_classes)
-        network.load_state_dict(model_zoo.load_url(
-            'https://download.pytorch.org/models/resnet50-19c8e357.pth'))
+    else:
+        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'per_post'")
 
     if torch.cuda.is_available():
         network = network.cuda()
@@ -67,13 +48,13 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
         network.load_vgg16_weights()
 
     if finetune or snapshot:
-	finetune = finetune + "/vhr_pre_post_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
+	finetune = finetune + "/vhr_" + experiment + "_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
     else:
-	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
+	finetune = RESULTS_PATH + "/vhr_" + experiment + "_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
 	state = resume(finetune or snapshot, network, None)
 
-    print(finetune)
+    print('Loaded: ', finetune)
     return network
 
 
@@ -89,18 +70,18 @@ def main(
         finetune,
         n_classes,
         loadvgg,
-        network_type,
+        experiment,
         write,
         num_test
 ):
-    np.random.seed(0)
 
-    network = init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvgg)
+    np.random.seed(0)
+    network = init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
 	
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val', pre_post=network_type=='vhr_pre_post')
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val', experiment=experiment)
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
@@ -205,12 +186,6 @@ if __name__ == '__main__':
         help='output directory',
     )
     parser.add_argument(
-        '-e', '--num-epochs',
-        default=10,
-        type=int,
-        help='number of epochs',
-    )
-    parser.add_argument(
         '-m', '--num-mini-batches',
         default=1,
         type=int,
@@ -253,16 +228,10 @@ if __name__ == '__main__':
         help='load vgg16',
     )
     parser.add_argument(
-        '-n', '--network_type',
-        default='segnet',
-        type=text_type,
-        help='network type',
-    )
-    parser.add_argument(
 	'-wr', '--write',
         default=True,
         type=bool,
-        help='must be set to False except when used in best_epochs.py' 
+        help='must be set to True except when used in best_epochs.py' 
     )
     parser.add_argument(
 	'-nt', '--num_test',
@@ -283,7 +252,7 @@ if __name__ == '__main__':
             args.finetune,
             args.n_classes,
             args.loadvgg,
-            args.network_type,
+            args.experiment,
             args.write,
 	        args.num_test
         )
