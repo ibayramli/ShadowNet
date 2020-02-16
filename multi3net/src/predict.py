@@ -38,7 +38,7 @@ import cv2
 
 def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvgg):
     if network_type == 'vhr_pre_post':
-        network = pspnet_10m_pre_post()
+        network = fc_ef()
     elif network_type == 'vhr':
 	print('Loaded the correct network type')
         network = unet_basic_vhr()
@@ -67,7 +67,7 @@ def init_network(network_type, n_classes, num_epochs, finetune, snapshot, loadvg
         network.load_vgg16_weights()
 
     if finetune or snapshot:
-	finetune = finetune + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
+	finetune = finetune + "/vhr_pre_post_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
     else:
 	finetune = RESULTS_PATH + "/vhr_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
@@ -100,7 +100,7 @@ def main(
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val')
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val', pre_post=network_type=='vhr_pre_post')
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
@@ -129,7 +129,8 @@ def main(
         #    soft = nn.Softmax2d()
         #    output = soft(output_raw)
  
-        train_metric = metric(target, output_raw)
+	output = output_raw
+        train_metric = metric(target, output)
         
         if not write:
             metric_dicts.append(train_metric)

@@ -51,7 +51,7 @@ def main(
     torch.manual_seed(0)
 
     # Visdom environment
-    visdom_environment = experiment + "_" + labelimage.replace(".tif", "")
+    visdom_environment = 'vhr' + "_" + labelimage.replace(".tif", "")
     outdir = os.path.join(outdir, visdom_environment)
 
     if validpath is None:
@@ -64,9 +64,9 @@ def main(
 
 
     if experiment == "vhr_pre_post":
-        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
+	network = siam_unet_diff()
+#        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
     elif experiment == "vhr":
-        print('Loaded model is: {}. '.format('unet_psp'))
         network = unet_basic_vhr()
     elif experiment == "s1":
         network = input_keep_res_net_34_s1_all()

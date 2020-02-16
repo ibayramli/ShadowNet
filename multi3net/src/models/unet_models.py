@@ -278,7 +278,7 @@ class FC_EF(nn.Module):
     def forward(self, input):
         post = tensor_to_variable(input['vhr_post'])
         pre = tensor_to_variable(input['vhr_pre'])
-        x = torch.cat([pre, post])
+        x = torch.cat([pre, post], dim=1)
         
         x1 = self.inc(x)
         x2 = self.down1(x1)

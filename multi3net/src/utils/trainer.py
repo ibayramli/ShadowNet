@@ -290,8 +290,7 @@ class Trainer(object):
 
             for key in input.keys():
                 input[key] = tensor_to_variable(input[key])
-	    target = tensor_to_variable(target_tensor[0]) 
-#            w1 = imbalance_coef(target_tensor[0], max_val=3.)  
+	    target = tensor_to_variable(target_tensor[0])  
 
             output = network.forward(input)
             # pspnet_fused return tuples if intermediate classification maps -> take last, that is the fused one
@@ -301,10 +300,6 @@ class Trainer(object):
             # force the output label map to match the target dimensions
             b, h, w = target.shape
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')	
-            
-#            loss = nn.NLLLoss2d(weight=w1) 
-#            if torch.cuda.is_available():
-#                loss = loss.cuda()
  
             l = loss(output, target.long()) 
             l.backward()
@@ -372,11 +367,9 @@ class Trainer(object):
             b, h, w = target.shape
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')
             l = loss(output, target.long())
-            #if torch.cuda.is_available():
-            #   l = l.cuda()
 
             val_metric = metric(target, output)
-            val_metric['loss'] = l.data.cpu().numpy()  # loss_metric(l.data[0]).cpu().numpy()
+            val_metric['loss'] = l.data.cpu().numpy()
 
             if self.logger is not None:
                 self.logger.log(val_metric.copy(), iteration)

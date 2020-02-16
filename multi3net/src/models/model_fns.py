@@ -29,7 +29,7 @@ def fusenet(encoder_path):
     return model
 
 def fc_ef():
-    model = FC_EF(6, 2)
+    model = FC_EF(3, 2)
     return model
 
 def siam_unet_conc():
