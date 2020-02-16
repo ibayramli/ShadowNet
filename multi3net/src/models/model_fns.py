@@ -1,7 +1,7 @@
 from models.pspnet.resnet import *
 from models.pspnet.psp_net import PSPNet
 from models.unet_models import *
-
+from models.siamese_models import *
 
 def pspnet_10m():
     model = PSPNet(resnet34(input_channels=3, pretrained=False), psp_size=512)
@@ -26,7 +26,18 @@ def unet_psp():
 def fusenet(encoder_path):
     encoder = unet_encoder(3, 2, encoder_path)
     model = FUseNet(3, 2, encoder)
+    return model
 
+def fc_ef():
+    model = FC_EF(6, 2)
+    return model
+
+def siam_unet_conc():
+    model = SiamUnet_conc(3, 2)
+    return model 
+
+def siam_unet_diff():
+    model = SiamUnet_diff(3, 2)
     return model
 
 
