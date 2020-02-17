@@ -64,8 +64,7 @@ def main(
 
 
     if experiment == "pre_post":
-        network = siam_unet_conc()
-#        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
+       network = additive_fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
     elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
     else:

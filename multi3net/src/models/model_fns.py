@@ -27,6 +27,11 @@ def fusenet(encoder_path):
     encoder = unet_encoder(3, 2, encoder_path)
     model = FUseNet(3, 2, encoder)
     return model
+    
+def additive_fusenet(encoder_path):
+    encoder = unet_encoder(3, 2, encoder_path)
+    model = AdditiveFUseNet(3, 2, encoder)
+    return model
 
 def fc_ef():
     model = FC_EF(3, 2)
