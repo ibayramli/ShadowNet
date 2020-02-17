@@ -110,7 +110,91 @@ class UNet_PSP(nn.Module):
     	class_idx = x.size().index(self.n_classes)
         return F.log_softmax(x, dim=class_idx)
 
+
 class FUseNet(nn.Module):
+    def __init__(self, n_channels, n_classes, post_encoder):
+        super(FUseNet, self).__init__()
+	
+        self.n_classes = n_classes
+        self.post_encoder = post_encoder
+
+        self.inc = inconv(n_channels, 64)
+	
+        self.conv0 = nn.Conv2d(128, 64, kernel_size=1)
+
+        self.down1 = down(64, 128)
+        self.conv1 = nn.Conv2d(256, 128, kernel_size=1)
+
+        self.down2 = down(128, 256)
+        self.conv2 = nn.Conv2d(512, 256, kernel_size=1)
+
+        self.down3 = down(256, 512)
+        self.conv3 = nn.Conv2d(1024, 512, kernel_size=1)
+
+        self.down4 = down(512, 512)
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(1024, 512, kernel_size=1), 
+            double_conv(512, 1024)
+        )
+
+        self.up1 = up_skip(1024, 512, halved_input=False)
+        self.up2 = up_skip(512, 256, halved_input=False)
+        self.up3 = up_skip(256, 128, halved_input=False)
+        self.up4 = up_skip(128, 64, halved_input=False)
+        self.outc = outconv(64, n_classes)
+
+        for name, module in self.named_children():
+            if name != 'post_encoder':        
+                for m in module.modules():
+                    if isinstance(m, nn.Conv2d):
+                        n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                        m.weight.data.normal_(0, math.sqrt(2. / n))
+                    elif isinstance(m, nn.BatchNorm2d):
+                        m.weight.data.fill_(1)
+                        m.bias.data.zero_()
+
+
+    def get_activations(self, name):
+        def hook(model, input, output):
+            self.activations[name] = output.detach()
+        return hook
+
+
+    def forward(self, input):
+        post = tensor_to_variable(input['vhr_post'])
+        pre = tensor_to_variable(input['vhr_pre'])
+        
+	with torch.no_grad():
+            _, activations = self.post_encoder(post)
+
+        x0 = self.inc(pre)
+        x0 = torch.cat([x0, activations['inc']], dim=1)
+        x0 = self.conv0(x0)
+
+        x1 = self.down1(x0)
+        x1 = torch.cat([x1, activations['down1']], dim=1)
+        x1 = self.conv1(x1)
+
+        x2 = self.down2(x1)
+        x2 = torch.cat([x2, activations['down2']], dim=1)
+        x2 = self.conv2(x2)
+
+        x3 = self.down3(x2)
+        x3 = torch.cat([x3, activations['down3']], dim=1)
+        x3 = self.conv3(x3)
+
+        x4 = self.down4(x3)
+        x4 = torch.cat([x4, activations['down4']], dim=1)
+        x4 = self.conv4(x4)
+ 	
+        x = self.up1(x4, activations['down3'])
+        x = self.up2(x, activations['down2'])
+        x = self.up3(x, activations['down1'])
+        x = self.up4(x, activations['inc'])
+        x = self.outc(x)
+
+        return F.log_softmax(x, dim=1)
+
 
 class AdditiveFUseNet(nn.Module):
     def __init__(self, n_channels, n_classes, post_encoder):
