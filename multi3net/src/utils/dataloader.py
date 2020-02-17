@@ -14,22 +14,22 @@ class XBDImageDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir="/n/tambe_lab/disaster_relief/xBD_data/data",
                  transform=None,
                  mode='train',
-                 experiment=experiment):
+                 experiment='post'):
 
 	if mode not in ['test', 'train', 'val']: 
-        raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
+            raise ValueError('Mode must be one of \'test\', \'train\', or \'val\'. ')
 	
 	self.experiment = experiment
 	self.mode = mode
-    self.root_dir = root_dir
-    self.n_classes = 2
-    self.tile_size = 1024 
-    self.validation = mode != 'train' 
-    self.transform = transform
-    self.augmentation = random_augment() if self.validation == False else random_augment(0)
-    self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
-    self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
-    self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks')) if '_post' in pn]
+        self.root_dir = root_dir
+        self.n_classes = 2
+        self.tile_size = 1024 
+        self.validation = mode != 'train' 
+        self.transform = transform
+        self.augmentation = random_augment() if self.validation == False else random_augment(0)
+        self.posts = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_post' in pn]
+        self.pres = [pn for pn in os.listdir(os.path.join(self.root_dir, self.mode)) if '_pre' in pn]
+        self.labels = [pn for pn in os.listdir(os.path.join(self.root_dir, 'masks'))]
         
 
     def __len__(self):
@@ -66,7 +66,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
             return np.moveaxis(array, 2, 0)
 	
-	    tile_size = self.tile_size
+        tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
 
         img_vhr = tiff_to_nd_array(vhr_img_path).astype(float)
@@ -91,27 +91,30 @@ class XBDImageDataset(torch.utils.data.Dataset):
         vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
         pre = self.path_to_tensor(vhr_pre_path)
 
-	    if self.experiment == 'post':
-	        inputs['vhr'] = post
+        if self.experiment == 'post':
+            inputs['vhr'] = post
+	    match = post_cur
         elif self.experiment == 'pre':
             inputs['vhr'] = pre
-        if self.experiment == 'pre_post':
+	    match = pre_cur
+        elif self.experiment == 'pre_post':
             inputs['vhr_pre'] = pre
-            inputs['vhr_post'] = post	            
+            inputs['vhr_post'] = post	           
+	    match = post_cur
 
-        if post_cur in self.labels:
-            label = self.read_target_file(os.path.join(self.root_dir, 'masks', post_cur))
+        if match in self.labels:
+            label = self.read_target_file(os.path.join(self.root_dir, 'masks', match))
             label = self.reduce_channels(label)
         else: # if label is missing, the label has no polygons (is all 0s)
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
 
-        tile = os.path.join(self.root_dir, 'masks', post_cur)
+        tile = os.path.join(self.root_dir, 'masks', match)
 
         return tile, inputs, (label, )
 
 def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                             mode='train', labelimage="buildings10m.tif", experiment=experiment):
+                             mode='train', labelimage="buildings10m.tif", experiment='post'):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
                            mode=mode, 
@@ -125,7 +128,7 @@ def train_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_m
     return dataloader
 
 def val_xbd_data_loader(root_dir, batch_size, num_workers, shuffle=True, use_multi_sar=False,
-                              mode='train', labelimage="buildings10m.tif", experiment=experiment):
+                              mode='train', labelimage="buildings10m.tif", experiment='post'):
     dataset = XBDImageDataset(root_dir,
                            transform=transform,
                            mode=mode, 

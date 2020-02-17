@@ -38,7 +38,7 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
     elif experiment == 'pre' or experiment == 'post':
         network = unet_basic_vhr()
     else:
-        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'per_post'")
+        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'pre_post'")
 
     if torch.cuda.is_available():
         network = network.cuda()
@@ -65,7 +65,7 @@ def main(
         nworkers,
         datadir,
         outdir,
-        num_epochs,
+	num_epochs,
         snapshot,
         finetune,
         n_classes,
@@ -174,6 +174,12 @@ if __name__ == '__main__':
         help='number of images in batch',
     )
     parser.add_argument(
+	'-e', '--num-epochs', 
+	default=10, 
+	type=int, 
+	help='number of epochs', 
+    )	
+    parser.add_argument(
         '-w', '--workers',
         default=1,
         type=int,
@@ -247,7 +253,7 @@ if __name__ == '__main__':
             args.workers,
             args.datadir,
             args.outdir,
-            args.num_epochs,
+	    args.num_epochs,
             args.resume,
             args.finetune,
             args.n_classes,

@@ -283,9 +283,8 @@ class Trainer(object):
 
         for iteration, data in enumerate(dataloader):
             optimizer.zero_grad()
-
+	    
             tile, input, target_tensor = data       	
-
             for key in input.keys():
                 input[key] = tensor_to_variable(input[key])
 	    target = tensor_to_variable(target_tensor[0])  

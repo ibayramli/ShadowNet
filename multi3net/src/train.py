@@ -64,7 +64,7 @@ def main(
 
 
     if experiment == "pre_post":
-	    network = siam_unet_diff()
+        network = siam_unet_diff()
 #        network = fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
     elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
@@ -87,10 +87,9 @@ def main(
         state = resume(snapshot, None, optimizer)
         train.iterations = state['iteration']
 
-    #loss = DiceLoss(weight=torch.tensor([20]), sigmoid_normalization=False)
     class_weights = torch.tensor([1., 3.])
     loss = nn.NLLLoss2d(weight=class_weights)
-    #losis = lovasz_softmax
+    
     if torch.cuda.is_available():
         loss = loss.cuda()
 
