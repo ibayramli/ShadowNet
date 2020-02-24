@@ -114,8 +114,8 @@ class UNet_PSP(nn.Module):
 class FUseNet(nn.Module):
     def __init__(self, n_channels, n_classes, post_encoder):
         super(FUseNet, self).__init__()
-	
-        self.n_classes = n_classes
+        
+	self.n_classes = n_classes
         self.post_encoder = post_encoder
 
         self.inc = inconv(n_channels, 64)
@@ -242,19 +242,19 @@ class AdditiveFUseNet(nn.Module):
             _, activations = self.post_encoder(post)
 
         x0 = self.inc(pre)
-        x0 += activations['inc']
+        x0 = x0 + activations['inc']
 
         x1 = self.down1(x0)
-        x1 += activations['down1']
+        x1 = x1 + activations['down1']
 
         x2 = self.down2(x1)
-        x2 += activations['down2']
+        x2 = x2 + activations['down2']
 
         x3 = self.down3(x2)
-        x3 += activations['down3']
+        x3 = x3 + activations['down3']
 
         x4 = self.down4(x3)
-        x4 += activations['down4']
+        x4 = x4 + activations['down4']
         x4 = self.conv4(x4)
  	
         x = self.up1(x4, activations['down3'])

@@ -34,7 +34,7 @@ import cv2
 
 def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg):
     if experiment == 'pre_post':
-        network = fc_ef()
+        network = siam_unet_conc()
     elif experiment == 'pre' or experiment == 'post':
         network = unet_basic_vhr()
     else:
@@ -48,10 +48,10 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
         network.load_vgg16_weights()
 
     if finetune or snapshot:
-	finetune = finetune + "/vhr_" + experiment + "_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
+	finetune = finetune + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
         state = resume(finetune or snapshot, network, None)
     else:
-	finetune = RESULTS_PATH + "/vhr_" + experiment + "_buildings10m" + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
+	finetune = RESULTS_PATH +  "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
 	state = resume(finetune or snapshot, network, None)
 
     print('Loaded: ', finetune)
@@ -81,7 +81,7 @@ def main(
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='val', experiment=experiment)
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
@@ -104,13 +104,12 @@ def main(
         output_raw = torch.nn.functional.upsample(output_raw, size=(h, w), mode='bilinear')
          
         # Normalize
-        #if n_classes == 1:
-        #    output = output_raw
-        #else:
+        if n_classes == 1:
+            output = output_raw
+        else:
         #    soft = nn.Softmax2d()
-        #    output = soft(output_raw)
+            output = torch.exp(output_raw)
  
-	output = output_raw
         train_metric = metric(target, output)
         
         if not write:
@@ -129,8 +128,8 @@ def main(
             prediction = output.cpu().data[0] 
             target = target.cpu().data[0] 
 
-        if not os.path.exists(RESULTS_PATH+"/img"):
-            os.makedirs(RESULTS_PATH+"/img")
+        if not os.path.exists(finetune + "/img"):
+            os.makedirs(finetune + "/img")
 
         # Remove extra dim
         if n_classes == 1:
@@ -140,10 +139,10 @@ def main(
 
         target_img = target.numpy()
  
-        cv2.imwrite(RESULTS_PATH+"/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), prediction_img*255)
-        cv2.imwrite(RESULTS_PATH+"/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), target_img*255)
+        cv2.imwrite(finetune + "/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), prediction_img*255)
+        cv2.imwrite(finetune + "/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), target_img*255)
 
-        with open(RESULTS_PATH + "/MSEloss.csv", "w") as output:
+        with open(finetune + "/MSEloss.csv", "w") as output:
             writer = csv.writer(output, delimiter=';', lineterminator='\n')
             for val in loss_str_list:
                 writer.writerow([val])
