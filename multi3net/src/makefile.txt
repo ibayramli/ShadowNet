@@ -1,0 +1,2 @@
+make:
+	gcc -o ./randmst -i ./randmst.c 
