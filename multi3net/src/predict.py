@@ -44,8 +44,6 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
         network = network.cuda()
  	network = nn.DataParallel(network).cuda()
 
-    network = nn.DataParallel(network)
-
     if loadvgg:
         network.load_vgg16_weights()
 
@@ -85,6 +83,13 @@ def main(
 
     val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
 
+    for iteration, data in enumerate(val):      
+        tile, input, target_tensor = data
+        output_raw = network.forward(input)
+        if iteration * batch_size > 80: break
+
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
+
     metric = classmetric.ClassMetric()
     loss_str_list = []
     metric_dicts = []
@@ -109,15 +114,12 @@ def main(
         if n_classes == 1:
             output = output_raw
         else:
-        #    soft = nn.Softmax2d()
             output = torch.exp(output_raw)
  
         train_metric = metric(target, output)
         
         if not write:
             metric_dicts.append(train_metric)
-            if iteration > num_test - 1:
-                break        
             continue
 
         loss_str_list.append("Input ID: {}; Metric: {} ".format(tile, str(train_metric)))
