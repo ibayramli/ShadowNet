@@ -44,6 +44,8 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
         network = network.cuda()
  	network = nn.DataParallel(network).cuda()
 
+    network = nn.DataParallel(network)
+
     if loadvgg:
         network.load_vgg16_weights()
 
@@ -148,7 +150,7 @@ def main(
                 writer.writerow([val])
 
     if not write:
-        return train_metric
+        return (train_metric, network)
  
 
 def tensor_to_variable(tensor):
