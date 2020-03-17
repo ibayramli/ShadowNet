@@ -34,7 +34,7 @@ import cv2
 
 def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg):
     if experiment == 'pre_post':
-        network = siam_unet_conc()
+        network = fc_ef()
     elif experiment == 'pre' or experiment == 'post':
         network = unet_basic_vhr()
     else:
@@ -43,6 +43,8 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
     if torch.cuda.is_available():
         network = network.cuda()
  	network = nn.DataParallel(network).cuda()
+
+    network = nn.DataParallel(network)
 
     if loadvgg:
         network.load_vgg16_weights()
@@ -81,19 +83,22 @@ def main(
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, shuffle=False, use_multi_sar=False, mode='test', experiment=experiment)
 
-    for iteration, data in enumerate(val):      
-        tile, input, target_tensor = data
-        output_raw = network.forward(input)
-        if iteration * batch_size > 80: break
+#    for iteration, data in enumerate(val):      
+#        tile, input, target_tensor = data
+#        output_raw = network.forward(input)
+#        if iteration * batch_size > 80: break
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
+#    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
     metric_dicts = []
     network.eval()
+    for child in list(network.children())[0].children():
+        if type(child)==nn.BatchNorm2d:
+            child.track_running_stats = False
 
     for iteration, data in enumerate(val):	
         if num_test and iteration >= num_test: 
