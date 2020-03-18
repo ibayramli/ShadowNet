@@ -15,6 +15,8 @@
 
 
 import json
+import os 
+
 from shapely import wkt
 from shapely.geometry import Polygon
 import numpy as np 
@@ -37,7 +39,7 @@ def create_image(inference_data):
     :returns: an numpy array of 8-bit grey scale image with polygons filled in according to the key provided
     """
 
-    damage_key = {'un-classified': 1, 'no-damage': 1, 'minor-damage': 2, 'major-damage': 3, 'destroyed': 4}
+    damage_key = {'un-classified': 0, 'no-damage': 1, 'minor-damage': 2, 'major-damage': 3, 'destroyed': 4}
 
     mask_img = np.zeros((1024,1024,1), np.uint8)
 
@@ -62,7 +64,7 @@ def save_image(polygons, output_path):
 def create_inference_image(json_input_path, image_output_path):
     """
     :param json_input_path: Path to output inference json file
-    :param image_outut_pat: Path to save the final inference image
+    :param image_output_pat: Path to save the final inference image
     """
 
     # Getting the inference data from the localization and classification 
@@ -74,6 +76,16 @@ def create_inference_image(json_input_path, image_output_path):
     # Saving the image to the desired location
     save_image(polygon_array, image_output_path)
 
+def create_multiclass_masks(labels_path, outputs_path):
+    """
+    :param label_path: Path to output inference json file
+    :param output_pat: Path to save the generated masks 
+    """
+    labels = os.listdir(labels_path)
+    for l in labels:
+        create_inference_image(os.path.join(labels_path, l), os.path.join(outputs_path, l))
+    
+
 if __name__ == '__main__': 
     import argparse
 
@@ -81,17 +93,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=
         """inference_image_output.py: Takes the inference localization and classification final outputs in json from and outputs an image ready to be scored based off the challenge parameters""")
-    parser.add_argument('--input',
+    parser.add_argument('--inputs_path',
                         required=True,
                         metavar='/path/to/final/inference.json',
-                        help="Full path to the final inference json")
-    parser.add_argument('--output',
+                        help="Full path to the json labels")
+    parser.add_argument('--outputs_path',
                         required=True,
                         metavar='/path/to/inference.png',
-                        help="Full path to save the image to")
+                        help="Full path to save the masks to")
 
     args = parser.parse_args()
 
     # Creating the scoring image
-    create_inference_image(args.input, args.output)
+    create_multiclass_masks(args.inputs_path, args.outputs_path)
 
