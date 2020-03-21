@@ -77,6 +77,12 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
         return img_vhr
 
+    def get_pre_prime(self, pre, post, mask):
+        pre_prime = pre
+        pre_prime[mask == 0] = post[mask == 0]
+
+        return pre_prime
+
     def __getitem__(self, idx):
         tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
@@ -99,8 +105,8 @@ class XBDImageDataset(torch.utils.data.Dataset):
 	    match = pre_cur
         elif self.experiment == 'pre_post':
             inputs['vhr_pre'] = pre
-            inputs['vhr_post'] = post	           
-	    match = post_cur
+            inputs['vhr_post'] = post	   
+        match = post_cur
 
         if match in self.labels:
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', match))
@@ -108,6 +114,10 @@ class XBDImageDataset(torch.utils.data.Dataset):
         else: # if label is missing, the label has no polygons (is all 0s)
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
+
+        elif self.experiment == 'pre_post_experimental':
+            inputs['vhr_pre'] = self.get_pre_prime(pre, post, label)
+            inputs['vhr_post'] = post        
 
         tile = os.path.join(self.root_dir, 'masks', match)
 
