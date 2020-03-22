@@ -80,11 +80,12 @@ class XBDImageDataset(torch.utils.data.Dataset):
         pre_prime = pre
         if torch.cuda.is_available():
             mask = mask.cpu().data.numpy()
+	    mask = np.repeat(mask[np.newaxis, :, :], 3, axis=0)
         else:
             mask = mask.data.numpy()
-
+	    mask = np.repeat(mask[np.newaxis, :, :], 3, axis=0)
         pre_prime[mask == 0] = post[mask == 0]
-
+	
         return self.array_to_tensor(pre_prime)
 
     def __getitem__(self, idx):
@@ -120,7 +121,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
 
-        elif self.experiment == 'pre_post_experimental':
+        if self.experiment == 'pre_post_experimental':
             inputs['vhr_pre'] = self.get_pre_prime(pre, post, label)
             inputs['vhr_post'] = self.array_to_tensor(post)
 

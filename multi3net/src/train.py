@@ -63,13 +63,13 @@ def main(
     val = val_xbd_data_loader(validpath, batch_size=batch_size, shuffle=True, mode='val',  num_workers=nworkers, experiment=experiment) 
 
 
-    if experiment == "pre_post":
+    if experiment == "pre_post" or experiment == "pre_post_experimental":
 #       network = additive_fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
 	network = siam_unet_conc()
     elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
     else:
-        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'per_post'")
+        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'pre_post'")
 	
     if torch.cuda.device_count() > 1:
 	network = nn.DataParallel(network)
