@@ -101,19 +101,19 @@ def main(
         output_raw = network.forward(input) 
         if type(output_raw) == tuple:
             output_raw = output_raw[-1] 
-            
+
         # force the output label map to match the target dimensions
         _, h, w = target.shape
         output_raw = torch.nn.functional.upsample(output_raw, size=(h, w), mode='bilinear')
-         
+ 
         # Normalize
         if n_classes == 1:
             output = output_raw
         else:
             output = torch.exp(output_raw)
- 
+
         train_metric = metric(target, output)
-        
+
         if not write:
             metric_dicts.append(train_metric)
             continue
@@ -125,8 +125,8 @@ def main(
             prediction = output.cpu().data[0] 
             target = target.cpu().data[0]
         else:
-            prediction = output.cpu().data[0] 
-            target = target.cpu().data[0] 
+            prediction = output.data[0] 
+            target = target.data[0] 
 
         if not os.path.exists(finetune + "/img"):
             os.makedirs(finetune + "/img")

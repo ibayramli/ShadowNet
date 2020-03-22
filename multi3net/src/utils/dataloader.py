@@ -59,17 +59,16 @@ class XBDImageDataset(torch.utils.data.Dataset):
         label = torch.from_numpy(label).long()
         return label
 
-    def path_to_tensor(self, vhr_img_path):
+    def array_to_tensor(self, img_vhr):
         def resize(array, shape):
             array = np.moveaxis(array, 0, 2)
             array = cv2.resize(array, dsize=shape, interpolation=cv2.INTER_LINEAR)
 
             return np.moveaxis(array, 2, 0)
-	
+
         tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
 
-        img_vhr = tiff_to_nd_array(vhr_img_path).astype(float)
         img_vhr = resize(img_vhr, shape=(int(h_vhr / 2), int(w_vhr / 2)))
         img_vhr = self.augmentation(img_vhr)
         img_vhr = normalize_channels(img_vhr, 255, 0)
@@ -79,33 +78,39 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
     def get_pre_prime(self, pre, post, mask):
         pre_prime = pre
+        if torch.cuda.is_available():
+            mask = mask.cpu().data.numpy()
+        else:
+            mask = mask.data.numpy()
+
         pre_prime[mask == 0] = post[mask == 0]
 
-        return pre_prime
+        return self.array_to_tensor(pre_prime)
 
     def __getitem__(self, idx):
         tile_size = self.tile_size
         h_vhr, w_vhr = int(tile_size*2/1.25), int(tile_size*2/1.25)
 
         inputs = dict()	
-        
+
         post_cur = self.posts[idx]
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
-        post = self.path_to_tensor(vhr_post_path)
+        post = tiff_to_nd_array(vhr_post_path).astype(float)
+        
 
         pre_cur = post_cur.replace('post', 'pre')
         vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
-        pre = self.path_to_tensor(vhr_pre_path)
+        pre = tiff_to_nd_array(vhr_pre_path).astype(float)
 
         if self.experiment == 'post':
-            inputs['vhr'] = post
+            inputs['vhr'] = self.array_to_tensor(post)
 	    match = post_cur
         elif self.experiment == 'pre':
-            inputs['vhr'] = pre
+            inputs['vhr'] = self.array_to_tensor(pre)
 	    match = pre_cur
         elif self.experiment == 'pre_post':
-            inputs['vhr_pre'] = pre
-            inputs['vhr_post'] = post	   
+            inputs['vhr_pre'] = self.array_to_tensor(pre)
+            inputs['vhr_post'] = self.array_to_tensor(post)
         match = post_cur
 
         if match in self.labels:
@@ -117,7 +122,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
 
         elif self.experiment == 'pre_post_experimental':
             inputs['vhr_pre'] = self.get_pre_prime(pre, post, label)
-            inputs['vhr_post'] = post        
+            inputs['vhr_post'] = self.array_to_tensor(post)
 
         tile = os.path.join(self.root_dir, 'masks', match)
 
