@@ -36,6 +36,7 @@ def main(
         nworkers,
         outdir,
         num_epochs,
+        num_classes,
         snapshot,
         finetune,
         lr,
@@ -64,12 +65,13 @@ def main(
 
 
     if experiment == "pre_post" or experiment == "pre_post_experimental":
-#       network = additive_fusenet('../results/predictions_single_unet_basic_weight_3/vhr_buildings10m/epoch_20_classes_02.pth')
 	network = siam_unet_conc()
+    elif experiment == 'prime_transform':
+        network = prime_transform()
     elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
     else:
-        raise ValueError("Please insert a valid experiment id. Valid experiments are 'pre', 'post', 'pre_post'")
+        raise ValueError("Please insert a valid experiment id.")
 	
     if torch.cuda.device_count() > 1:
 	network = nn.DataParallel(network)
@@ -87,15 +89,16 @@ def main(
         state = resume(snapshot, None, optimizer)
         train.iterations = state['iteration']
 
-    class_weights = torch.tensor([1., 3.])
-    loss = nn.NLLLoss2d(weight=class_weights)
+    # class_weights = torch.tensor([1., 3.])
+    # loss = nn.NLLLoss2d(weight=class_weights)
+    loss = nn.MSELoss()
     
     if torch.cuda.is_available():
         loss = loss.cuda()
 
     trainer = Trainer(
         network, optimizer, scheduler, loss, train, val,
-        outdir, visdom_environment, smoketest
+        outdir, visdom_environment, num_classes, smoketest
     )
     trainer.train(num_epochs, start_epoch=0)
     
@@ -106,6 +109,7 @@ def parse_args():
     parser.add_argument('-w', '--workers', default=1, type=int, help='number of dataloader workers, i.e., multi-threaded processes')
     parser.add_argument('-o', '--outdir', default='/tmp', type=str, help='output directors (defaults to /tmp)', )
     parser.add_argument('-e', '--num-epochs', default=10, type=int, help='number of epochs', )
+    parser.add_argument('-c', '--num-classes', default=2, type=int, help='number of classes', )
     parser.add_argument('-r', '--resume', default='', type=str, help='snapshot path to pretrained models with epoch and optimizer information', )
     parser.add_argument('-f', '--finetune', default='', type=str, help='finetune path to weights only')
     parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate')
@@ -129,6 +133,7 @@ if __name__ == '__main__':
             args.workers,
             args.outdir,
             args.num_epochs,
+            args.num_classes,
             args.resume,
             args.finetune,
             args.lr,
