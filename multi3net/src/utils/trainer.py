@@ -151,6 +151,20 @@ class AverageMetric(object):
         self.total += loss
         return self.total / self.iterations
 
+"""
+class PolyPolicy(lr_scheduler.LambdaLR):
+    def __init__(self, optimizer, num_epochs=1, power=0.5, last_epoch=-1):
+        self.power = power
+        self.num_epochs = num_epochs
+        self.base_lrs = [g['lr'] for g in optimizer.param_groups]
+        lr_scheduler.LambdaLR.__init__(self, optimizer, 1, last_epoch)
+
+    def get_lr(self):
+        i = self.last_epoch
+        p = self.power
+        n = self.num_epochs
+        return [base_lr * (1 - i/n) ** p for base_lr in self.base_lrs]
+"""
 def tensor_to_variable(tensor):
     if torch.cuda.is_available():
         return Variable(tensor.float()).cuda()
@@ -168,8 +182,7 @@ class Trainer(object):
             val_iter,
             outdir,
             visdom_environment,
-            num_classes,
-            smoketest=False,
+            smoketest=False
     ):
         self.state = {
             'network': network,
@@ -194,7 +207,6 @@ class Trainer(object):
             format='%(asctime)s - %(message)s',
         )
 
-        self.n_classes = num_classes
         self.smoketest = smoketest
         self.logger = Logger(columns=["loss"], modes=["train"], csv=os.path.join(outdir,visdom_environment+".csv"))
         self.vizlogger = VisdomLogger(env=visdom_environment,use_incoming_socket=False) # server='http://129.187.92.97',port=1234,log_to_filename="visdom.log",
@@ -278,18 +290,20 @@ class Trainer(object):
 	    target = tensor_to_variable(target_tensor[0])  
 
             output = network.forward(input)
-            b, h, w = target.shape # force the output label map to match the target dimensions
+            # pspnet_fused return tuples if intermediate classification maps -> take last, that is the fused one
+            if type(output)==tuple:
+                output = output[-1]
+	    
+            # force the output label map to match the target dimensions
+            b, h, w = target.shape
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')	
  
             l = loss(output, target.long()) 
             l.backward()
             optimizer.step()
             
-            if self.n_classes > 1:
-                train_metric = metric(target, output)
-            else:
-                train_metric = {}
-                train_metric['loss'] = l.data.cpu().numpy()
+            train_metric = metric(target, output)
+            train_metric['loss'] = l.data.cpu().numpy()
 
             if self.logger is not None:
                 self.logger.log(train_metric.copy(), iteration)
@@ -324,7 +338,9 @@ class Trainer(object):
         printer = IntervalPrinter(1, PRINT_FORMAT_VAL)
         network = self.state['network']
         loss = self.state['loss']
+        # average_metric = AverageMetric()
         metric = classmetric.ClassMetric()
+        # val_loss = dict()
         val_metric = dict()
         self.hook('validation_start')
 
@@ -338,15 +354,19 @@ class Trainer(object):
                 input[key] = tensor_to_variable(input[key])
 
             output = network.forward(input)
-            b, h, w = target.shape # force the output label map to match the target dimensions
+
+            # pspnet_fused return tuples if intermediate classification maps -> take last, that is the fused one
+            if type(output) == tuple:
+                output = output[-1]
+
+            # force the output label map to match the target dimensions
+	  
+            b, h, w = target.shape
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')
             l = loss(output, target.long())
 
-            if self.n_classes > 1:
-                val_metric = metric(target, output)
-            else:
-                val_metric = {}
-                val_metric['loss'] = l.data.cpu().numpy()
+            val_metric = metric(target, output)
+            val_metric['loss'] = l.data.cpu().numpy()
 
             if self.logger is not None:
                 self.logger.log(val_metric.copy(), iteration)

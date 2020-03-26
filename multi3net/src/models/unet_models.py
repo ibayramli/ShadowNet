@@ -1,3 +1,5 @@
+# full assembly of the sub-parts to form the complete net
+
 from unet_parts import *
 
 import math
@@ -61,7 +63,6 @@ class UNet(nn.Module):
 
     	class_idx = x.size().index(self.n_classes)
         return F.log_softmax(x, dim=class_idx)
-
 
 class UNet_PSP(nn.Module):
     def __init__(self, n_channels, n_classes, psp_sizes=(1, 2, 3, 6)):
@@ -264,7 +265,6 @@ class AdditiveFUseNet(nn.Module):
 
         return F.log_softmax(x, dim=1)
 
-
 class UNet_Encoder(nn.Module):
     def __init__(self, n_channels):
         super(UNet_Encoder, self).__init__()
@@ -318,6 +318,7 @@ def unet_encoder(in_channels, out_channels, encoder_path, encoder_depth=5):
     unet_enc.load_state_dict(unet_state)
     return unet_enc
 
+
 # Implementation of a model from https://arxiv.org/pdf/1810.08462.pdf
 class FC_EF(nn.Module):    
     def __init__(self, n_channels, n_classes):
@@ -365,46 +366,3 @@ class FC_EF(nn.Module):
     	class_idx = x.size().index(self.n_classes)
         return F.log_softmax(x, dim=class_idx)
 
-
-class PrimeTransform(nn.Module):
-    def __init__(self, n_channels):
-        super(PrimeTransform, self).__init__()
-	
-        self.inc = inconv(2 * n_channels, 64)
-        self.down1 = down(64, 128)
-        self.down2 = down(128, 256)
-        self.down3 = down(256, 512)
-        self.down4 = down(512, 512)
-        self.up1 = up_skip(1024, 256)
-        self.up2 = up_skip(512, 128)
-        self.up3 = up_skip(256, 64)
-        self.up4 = up_skip(128, 64)
-        self.outc = outconv(64, n_channels)
-
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-
-    def forward(self, input):
-        post = input['vhr_post']
-        pre = input['vhr_pre']
-        x = torch.cat([pre, post], dim=1)
-        
-        x1 = self.inc(x)
-        x2 = self.down1(x1)
-        x3 = self.down2(x2)
-        x4 = self.down3(x3)
-        x5 = self.down4(x4)
- 
-        x = self.up1(x5, x4)
-        x = self.up2(x, x3)
-        x = self.up3(x, x2)
-        x = self.up4(x, x1)
-        x = self.outc(x)
-
-        return x

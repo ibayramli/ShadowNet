@@ -97,12 +97,23 @@ class XBDImageDataset(torch.utils.data.Dataset):
         post_cur = self.posts[idx]
         vhr_post_path = os.path.join(self.root_dir, self.mode, post_cur)
         post = tiff_to_nd_array(vhr_post_path).astype(float)
+        
 
         pre_cur = post_cur.replace('post', 'pre')
         vhr_pre_path = os.path.join(self.root_dir, self.mode, pre_cur)
         pre = tiff_to_nd_array(vhr_pre_path).astype(float)
 
-        match = pre_cur if self.experiment == 'pre' else post_cur
+        if self.experiment == 'post':
+            inputs['vhr'] = self.array_to_tensor(post)
+	    match = post_cur
+        elif self.experiment == 'pre':
+            inputs['vhr'] = self.array_to_tensor(pre)
+	    match = pre_cur
+        elif self.experiment == 'pre_post':
+            inputs['vhr_pre'] = self.array_to_tensor(pre)
+            inputs['vhr_post'] = self.array_to_tensor(post)
+        match = post_cur
+
         if match in self.labels:
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', match))
             label = self.reduce_channels(label)
@@ -110,23 +121,9 @@ class XBDImageDataset(torch.utils.data.Dataset):
             label = self.read_target_file(os.path.join(self.root_dir, 'masks', 'black_img.png'))
             label = self.reduce_channels(label)
 
-        if self.experiment == 'post':
-            inputs['vhr'] = self.array_to_tensor(post)
-        elif self.experiment == 'pre':
-            inputs['vhr'] = self.array_to_tensor(pre)
-        elif self.experiment == 'pre_post':
-            inputs['vhr_pre'] = self.array_to_tensor(pre)
-            inputs['vhr_post'] = self.array_to_tensor(post)
-        elif self.experiment == 'pre_post_experimental':
+        if self.experiment == 'pre_post_experimental':
             inputs['vhr_pre'] = self.get_pre_prime(pre, post, label)
             inputs['vhr_post'] = self.array_to_tensor(post)
-        elif self.experiment == 'prime_transform':
-            inputs['vhr_pre'] = self.array_to_tensor(pre)
-            inputs['vhr_post'] = self.array_to_tensor(post)
-            label = self.get_pre_prime(pre, post, label)
-            tile = os.path.join(self.root_dir, 'masks', match)
-
-            return tile, inputs, (label, )
 
         tile = os.path.join(self.root_dir, 'masks', match)
 

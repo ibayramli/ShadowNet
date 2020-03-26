@@ -45,9 +45,5 @@ def siam_unet_diff():
     model = SiamUnet_diff(3, 2)
     return model
 
-def prime_transform():
-    model = PrimeTransform(3)
-    return model
-
 
 
