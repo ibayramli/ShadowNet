@@ -153,9 +153,9 @@ class AverageMetric(object):
 
 def tensor_to_variable(tensor):
     if torch.cuda.is_available():
-        return Variable(tensor.float()).cuda()
+        return Variable(tensor).cuda()
     else:
-        return Variable(tensor.float())
+        return Variable(tensor)
 
 class Trainer(object):
     def __init__(
@@ -218,8 +218,8 @@ class Trainer(object):
                 self.print_info()
                 a = time.time()
                 scheduler.step()
-                train_metrics = self.train_epoch(epoch)
-                print_over('TRAIN', dict2string(train_metrics),nicetime(time.time() - a))
+               # train_metrics = self.train_epoch(epoch)
+               # print_over('TRAIN', dict2string(train_metrics),nicetime(time.time() - a))
                 a = time.time()
                 with torch.no_grad():
                     val_metrics = self.validate_epoch(epoch)
@@ -278,10 +278,9 @@ class Trainer(object):
 	    target = tensor_to_variable(target_tensor[0])  
 
             output = network.forward(input)
-            b, h, w = target.shape # force the output label map to match the target dimensions
+            b, c, h, w = target.shape # force the output label map to match the target dimensions
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')	
- 
-            l = loss(output, target.long()) 
+            l = loss(output, target) 
             l.backward()
             optimizer.step()
             
@@ -307,9 +306,9 @@ class Trainer(object):
                     torch.cuda.is_available() and LOG_NGC_DICT:
                 nvidia_tools.log_gpu_statistics()
 
-            if iteration % LOG_NGC_EVERY_N_ITERATIONS == 0 and not LOG_NGC_DICT:
-                push_ngc_telemetry("train_iou_building", train_metric["iou_building"])
-                push_ngc_telemetry("train_loss", train_metric["loss"])
+           # if iteration % LOG_NGC_EVERY_N_ITERATIONS == 0 and not LOG_NGC_DICT:
+           #     push_ngc_telemetry("train_iou_building", train_metric["iou_building"])
+           #     push_ngc_telemetry("train_loss", train_metric["loss"])
 
             if self.smoketest:
                 print("Smoketest! Stopping training early after one iteration")
@@ -338,9 +337,14 @@ class Trainer(object):
                 input[key] = tensor_to_variable(input[key])
 
             output = network.forward(input)
-            b, h, w = target.shape # force the output label map to match the target dimensions
+
+	    if self.n_classes > 2:
+            	b, c, h, w = target.shape # force the output label map to match the target dimensions
+	    else:
+            	b, h, w = target.shape # force the output label map to match the target dimensions	
+            
             output = nn.functional.upsample(output, size=(h, w), mode='bilinear')
-            l = loss(output, target.long())
+            l = loss(output, target)
 
             if self.n_classes > 1:
                 val_metric = metric(target, output)
@@ -365,9 +369,9 @@ class Trainer(object):
                     torch.cuda.is_available() and LOG_NGC_DICT:
                 nvidia_tools.log_gpu_statistics()
 
-            if iteration % LOG_NGC_EVERY_N_ITERATIONS == 0 and not LOG_NGC_DICT:
-                push_ngc_telemetry("val_iou_building", val_metric["iou_building"])
-                push_ngc_telemetry("val_loss", val_metric["loss"])
+           # if iteration % LOG_NGC_EVERY_N_ITERATIONS == 0 and not LOG_NGC_DICT:
+           #     push_ngc_telemetry("val_iou_building", val_metric["iou_building"])
+           #     push_ngc_telemetry("val_loss", val_metric["loss"])
 
             if self.smoketest:
                 print("Smoketest! Stopping validation early after one iteration")

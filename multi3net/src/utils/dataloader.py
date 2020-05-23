@@ -44,7 +44,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
 	reduced = torch.max(arr, dim=0)[0]
         reduced[reduced > 0] = 1
         
-        return reduced 
+        return reduced
 
     def multiclass_generation(self, img):  # FIXME
         for idx in range(len(img)):
@@ -72,7 +72,7 @@ class XBDImageDataset(torch.utils.data.Dataset):
         img_vhr = resize(img_vhr, shape=(int(h_vhr / 2), int(w_vhr / 2)))
         img_vhr = self.augmentation(img_vhr)
         img_vhr = normalize_channels(img_vhr, 255, 0)
-        img_vhr = torch.from_numpy(img_vhr)
+        img_vhr = torch.from_numpy(img_vhr).float()
 
         return img_vhr
 

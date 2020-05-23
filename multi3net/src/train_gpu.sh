@@ -5,7 +5,7 @@
 #SBATCH --gpu-freq=high
 #SBATCH -p gpu_test
 #SBATCH --mem-per-gpu=12000
-#SBATCH -o myoutput_prime_transform_%j.out 
-#SBATCH -e myerrors_prime_transform_%j.err
+#SBATCH -o myoutput_siam_unet_conc_val_%j.out 
+#SBATCH -e myerrors_siam_unet_conc_val_%j.err
 
-python train.py -x 'prime_transform' -o '/n/holyscratch01/tambe_lab/disaster_relief/multi3net/results/predictions_prime_transform'  -e 25 -b 10 -c 1
+python train.py -x 'pre_post' -o '.' -f '/n/holyscratch01/tambe_lab/disaster_relief/multi3net/results/predictions_siam_unet_conc/vhr_pre_post_buildings10m/epoch_24_classes_02.pth'  -e 1 -b 5

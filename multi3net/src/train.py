@@ -89,9 +89,8 @@ def main(
         state = resume(snapshot, None, optimizer)
         train.iterations = state['iteration']
 
-    # class_weights = torch.tensor([1., 3.])
-    # loss = nn.NLLLoss2d(weight=class_weights)
-    loss = nn.MSELoss()
+    class_weights = torch.tensor([1., 3.])
+    loss = nn.NLLLoss2d(weight=class_weights)
     
     if torch.cuda.is_available():
         loss = loss.cuda()

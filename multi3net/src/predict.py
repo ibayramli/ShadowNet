@@ -32,9 +32,9 @@ from torch.autograd import Variable
 import cv2
 
 
-def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg):
+def init_network(experiment, n_classes, num_epochs, finetune):
     if experiment == 'pre_post':
-        network = fc_ef()
+        network = siam_unet_conc()
     elif experiment == 'pre' or experiment == 'post':
         network = unet_basic_vhr()
     else:
@@ -44,15 +44,12 @@ def init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
         network = network.cuda()
  	network = nn.DataParallel(network).cuda()
 
-    if loadvgg:
-        network.load_vgg16_weights()
-
-    if finetune or snapshot:
+    if finetune:
 	finetune = finetune + "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)
-        state = resume(finetune or snapshot, network, None)
+        state = resume(finetune, network, None)
     else:
-	finetune = RESULTS_PATH +  "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)                                                                                              
-	state = resume(finetune or snapshot, network, None)
+	finetune = RESULTS_PATH +  "/epoch_{:02}_classes_{:02}.pth".format(num_epochs, n_classes)     
+        state = resume(finetune, network, None)
 
     print('Loaded: ', finetune)
     return network
@@ -66,54 +63,46 @@ def main(
         datadir,
         outdir,
 	num_epochs,
-        snapshot,
         finetune,
         n_classes,
-        loadvgg,
         experiment,
-        write,
-        num_test
+        write
 ):
 
     np.random.seed(0)
-    network = init_network(experiment, n_classes, num_epochs, finetune, snapshot, loadvgg)
+    network = init_network(experiment, n_classes, num_epochs, finetune)
 	
     if not datadir:
         datadir = TESTDATA_PATH
 
-    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, shuffle=False, use_multi_sar=False, mode='test', experiment=experiment)
+    val = val_xbd_data_loader(datadir, batch_size=batch_size, num_workers=nworkers, mode='test', experiment=experiment)
 
     metric = classmetric.ClassMetric()
     loss_str_list = []
     metric_dicts = []
     network.eval()
-    for child in list(network.children())[0].children():
-        if type(child)==nn.BatchNorm2d:
-            child.track_running_stats = False
 
     for iteration, data in enumerate(val):	
-        if num_test and iteration >= num_test: 
-            break
-
         tile, input, target_tensor = data
         target = tensor_to_variable(target_tensor[0])
         
         output_raw = network.forward(input) 
-        if type(output_raw) == tuple:
-            output_raw = output_raw[-1] 
-
+            
         # force the output label map to match the target dimensions
         _, h, w = target.shape
         output_raw = torch.nn.functional.upsample(output_raw, size=(h, w), mode='bilinear')
- 
+         
         # Normalize
         if n_classes == 1:
             output = output_raw
         else:
+        #    soft = nn.Softmax2d()
+	#    output = soft(output_raw)
             output = torch.exp(output_raw)
-
+	#     output = output_raw
+ 
         train_metric = metric(target, output)
-
+        
         if not write:
             metric_dicts.append(train_metric)
             continue
@@ -127,10 +116,7 @@ def main(
         else:
             prediction = output.data[0] 
             target = target.data[0] 
-
-        if not os.path.exists(finetune + "/img"):
-            os.makedirs(finetune + "/img")
-
+        
         # Remove extra dim
         if n_classes == 1:
             prediction_img = prediction.numpy()
@@ -139,6 +125,9 @@ def main(
 
         target_img = target.numpy()
  
+        if not os.path.exists(finetune + "/img"):
+            os.makedirs(finetune + "/img") 
+
         cv2.imwrite(finetune + "/img/{}_prediction_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), prediction_img*255)
         cv2.imwrite(finetune + "/img/{}_target_class_{:02}_{}.png".format(iteration, n_classes, tile[0].split('/')[-1].split('.')[0]), target_img*255)
 
@@ -227,22 +216,10 @@ if __name__ == '__main__':
         help='experiment name',
     )
     parser.add_argument(
-        '-v', '--loadvgg',
-        default=False,
-        type=int,
-        help='load vgg16',
-    )
-    parser.add_argument(
 	'-wr', '--write',
         default=True,
         type=bool,
         help='must be set to True except when used in best_epochs.py' 
-    )
-    parser.add_argument(
-	'-nt', '--num_test',
-	default=0,
-	type=int,
-	help='number of test examples to consider'
     )
 
     args, unknown = parser.parse_known_args()
@@ -253,13 +230,10 @@ if __name__ == '__main__':
             args.datadir,
             args.outdir,
 	    args.num_epochs,
-            args.resume,
             args.finetune,
             args.n_classes,
-            args.loadvgg,
             args.experiment,
             args.write,
-	        args.num_test
         )
     except KeyboardInterrupt:
         pass
