@@ -66,8 +66,6 @@ def main(
 
     if experiment == "pre_post" or experiment == "pre_post_experimental":
 	network = siam_unet_conc()
-    elif experiment == 'prime_transform':
-        network = prime_transform()
     elif experiment == "pre" or experiment == 'post':
         network = unet_basic_vhr()
     else:
