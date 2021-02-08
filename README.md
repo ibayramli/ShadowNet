@@ -10,4 +10,21 @@ This repository contains code for binary damage segmentation networks examined i
   <a href="https://aiforgood2020.github.io/papers/AI4SG_paper_76.pdf">View Paper</a>
 </p>
 
+<img src="img/multi3net.png">
+
+### Data
+
+Download the satellite images from [xView2 Challenge website](https://xview2.org/dataset).
+
+### Dependencies
+Create a conda environment and install the program dependencies using the following commands:
+```
+conda create -n shadownet pip
+conda install pytorch torchvision -c pytorch
+pip install opencv-python numpy mkl-random pandas rasterio matplotlib
+```
+
+You also should export the global variables in `export_vars.sh` that the programs depend on.
+
+### Credits
 In writing this codebase, we have benefited from work of Frontier Development Lab on [Multi3Net](https://github.com/FrontierDevelopmentLab/multi3net) architecture.
