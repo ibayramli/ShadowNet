@@ -10,9 +10,9 @@ This repository contains code for binary damage segmentation networks examined i
   <a href="https://aiforgood2020.github.io/papers/AI4SG_paper_76.pdf">View Paper</a>
 </p>
 
-<img src="img/shadows_replacement.PNG.PNG">
+<img align="center" src="img/shadows_replacement.PNG">
 
-<img src="img/table_shadows.PNG">
+<img align="center" src="img/table_shadows.PNG">
 
 ### Data
 
