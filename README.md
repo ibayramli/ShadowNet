@@ -26,6 +26,11 @@ conda install pytorch torchvision -c pytorch
 pip install opencv-python numpy mkl-random pandas rasterio matplotlib
 ```
 
+or install dependencies directly from `requirements.txt`:
+```
+pip install -r requirements.tx
+```
+
 You also should export the global variables in `export_vars.sh` that the programs depend on.
 
 ### Credits
