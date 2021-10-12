@@ -30,7 +30,7 @@ mkl-service==2.3.0
 networkx==2.2
 numpy==1.16.5
 olefile==0.46
-opencv-python==4.1.1.26
+opencv-python==4.2.0.32
 pandas==0.24.2
 Pillow==6.2.0
 pycparser==2.19
